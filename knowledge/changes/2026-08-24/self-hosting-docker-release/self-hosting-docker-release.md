@@ -52,6 +52,12 @@ sources:
 - New rule [CHANGELOG and release process](/rules/changelog-and-release-process.md).
 - `docs/configuration.md`, `docs/getting-started.md`, `infra/README.md`, root `docker-compose.yml`, `.env.example`, and `apps/api/.env.example` updated to mention `deploy/`, `docs/self-hosting.md`, and the new `PUBLIC_*_HOSTNAME` variables.
 
+## Follow-up: promote command and multi-arch build fix (same day)
+
+- `scripts/extract-changelog.sh promote <version> [date] [file]`: renames `## [Unreleased]` into a dated `## [X.Y.Z] - YYYY-MM-DD` section, leaves a fresh empty `[Unreleased]` above it, and refreshes the `[Unreleased]`/`[X.Y.Z]` compare/release links at the bottom of the file. `AGENTS.md` and the `changelog-and-release-process` rule now reference this command for release step 1.
+- `Dockerfile`: the first real `v1.0.0` release attempt failed in CI — `pnpm install` crashed with `qemu: uncaught target signal 4 (Illegal instruction)` while cross-building `linux/arm64` on the `amd64` GitHub Actions runner. Fixed by pinning the `deps`/`build` stages to `--platform=$BUILDPLATFORM` (they only produce architecture-neutral JS/CSS output); only the final `oven/bun` runtime stage stays on the real target platform. Verified locally with a `linux/amd64` + `linux/arm64` `docker buildx build` (both platforms share a single native `deps`/`build` execution, no emulation).
+- `CHANGELOG.md`'s `[Unreleased]` was promoted to `[1.0.0] - 2026-08-24` (via the new `promote` command) and `package.json`'s version bumped to `1.0.0` to cut the project's first tagged release.
+
 # Why
 
 The user asked to make the project easier to run for people who are not developers (clear README, no forced repo clone, Traefik example, hostname-driven config), to ship official Docker Hub images automatically on release, and to adopt a Keep a Changelog + tag-triggered release process (matching the pattern used in `nixartz/yaoe-flow`'s `AGENTS.md`).

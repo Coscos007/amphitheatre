@@ -26,10 +26,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - [Self-hosting guide](docs/self-hosting.md), written for non-developers running their own instance.
 - `.github/workflows/release.yml`: pushing a `vX.Y.Z` tag creates a GitHub Release from this file and publishes a multi-arch (`amd64`/`arm64`) image to Docker Hub.
 - This `CHANGELOG.md`, following Keep a Changelog, as the macro-history counterpart to the OKF catalog.
+- `scripts/extract-changelog.sh promote <version>` command: moves `[Unreleased]` into a dated `## [X.Y.Z] - YYYY-MM-DD` section and refreshes the compare/release links, automating step 1 of the release flow.
 
 ### Changed
 
 - `README.md` rewritten in plain language, answering directly whether you need to clone the repo, use only a Compose file, or a single `docker run` (short answer: it depends on whether you want to use the app or develop it — see the guide).
+
+### Fixed
+
+- Multi-arch Docker release build: pin the JS-only `deps`/`build` stages in `Dockerfile` to `--platform=$BUILDPLATFORM` so `pnpm install`/`vite build` run natively on the runner instead of crashing under QEMU emulation ("illegal instruction") while cross-building `linux/arm64`.
 
 [Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.0.0
