@@ -1,6 +1,11 @@
-# Amphitheatre — local-first media stack.
+# Amphitheatre — local-first media stack for DEVELOPMENT (apps run from source
+# on the host; this file does not start apps/api or apps/web).
 # Default (`docker compose up`): Valkey + LiveKit. Voice/chat/camera/screenshare work
 # with OvenMediaEngine stopped. OME is an optional profile (`--profile ome`).
+#
+# Self-hosting a production instance (pre-built images, your own domain,
+# reverse proxy)? Use deploy/docker-compose.yml or deploy/docker-compose.traefik.yml
+# instead — see docs/self-hosting.md.
 #
 # Docs consulted: OvenMediaEngine Getting Started with Docker + Server.xml
 # (ovenmedialabs.com), LiveKit config-sample.yaml + self-hosting, Compose profiles.

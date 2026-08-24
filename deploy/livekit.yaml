@@ -1,0 +1,67 @@
+# LiveKit config for a public, self-hosted Amphitheatre.
+# Copy of infra/livekit/livekit.yaml, tuned for a real server with a public IP
+# (instead of a local Docker Desktop machine). See docs/self-hosting.md.
+
+port: 7880
+log_level: info
+
+prometheus:
+  port: 6789
+
+redis:
+  address: redis:6379
+  db: 1
+
+rtc:
+  udp_port: 7882
+  tcp_port: 7881
+  # true on a real server: STUN discovers the public IP so clients can reach
+  # the media ports directly, even behind a reverse proxy (which only carries
+  # the HTTP/WebSocket signalling, never the UDP media).
+  use_external_ip: true
+  enable_loopback_candidate: false
+  congestion_control:
+    enabled: true
+    allow_pause: true
+  allow_tcp_fallback: true
+
+room:
+  auto_create: true
+  empty_timeout: 300
+  departure_timeout: 20
+  max_participants: 50
+  enabled_codecs:
+    - mime: audio/opus
+    - mime: video/vp8
+    - mime: video/h264
+    - mime: video/vp9
+    - mime: audio/red
+
+limit:
+  num_tracks: 800
+  bytes_per_sec: 12500000
+  subscription_limit_video: 50
+  subscription_limit_audio: 50
+
+# Embedded TURN — turn this on if participants on very restrictive networks
+# (hotel Wi-Fi, some mobile carriers) cannot connect. Needs a real hostname
+# and a certificate, or LIVEKIT_TURN_CERT/LIVEKIT_TURN_KEY.
+# turn:
+#   enabled: true
+#   udp_port: 3479
+#   tls_port: 5349
+#   domain: turn.example.com
+#   relay_range_start: 30000
+#   relay_range_end: 30100
+#   per_user_relay_allocation_limit: 12
+
+# IMPORTANT: this file is static — LiveKit does not read environment
+# variables from it. "api_key" below must be the exact same value as
+# LIVEKIT_API_KEY in your .env. If you change one, change both.
+#
+# The "app" service and LiveKit share the same Docker network in this compose
+# file, so the webhook can reach the API by its service name.
+webhook:
+  api_key: amphitheatre
+  urls:
+    - http://app:3001/webhooks/livekit

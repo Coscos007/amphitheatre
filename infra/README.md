@@ -4,6 +4,8 @@ How to run **LiveKit** (voice, camera, screen share) and, optionally, **OvenMedi
 
 Apps `apps/api` (Hono :3001) and `apps/web` (Vite :5173) are **not** in this folder. This README is the contract they use to connect.
 
+This folder is for **local development** (the apps run from source on the host). To self-host a production instance with pre-built images, a domain, and a reverse proxy, use [`deploy/`](../deploy/) and [docs/self-hosting.md](../docs/self-hosting.md) instead.
+
 ## Prerequisites
 
 - Docker Engine + Compose v2

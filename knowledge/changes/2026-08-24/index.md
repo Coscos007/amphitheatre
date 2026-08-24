@@ -1,5 +1,6 @@
 # Changes — 2026-08-24
 
+* [Self-hosting, single Docker image, and release automation](self-hosting-docker-release/self-hosting-docker-release.md) - human-readable README/guide; deploy/ Compose stack; Dockerfile; PUBLIC_*_HOSTNAME; CHANGELOG.md; tag-triggered Docker Hub release
 * [Infinite grid 3D on Home](home-infinite-grid-3d/home-infinite-grid-3d.md) - customizable CSS 3D background instead of the radial
 * [Tabler + browser locale](tabler-icons-and-locale-detect/tabler-icons-and-locale-detect.md) - Tabler icons; automatic language; persist after choice
 * [Room rework](theater-room-rework/theater-room-rework.md) - HTML, pin/grid, broadcast opt-in, modals

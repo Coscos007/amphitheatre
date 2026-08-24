@@ -29,3 +29,4 @@ Code and process rules. The agent must apply them; if the user changes a durable
 * [Chat flood soft-ban](chat-flood-soft-ban.md) - 1024 chars; 1–2 min pause on flood
 * [AGPLv3 and CLA](agplv3-and-cla.md) - public edition AGPL-3.0-only; ICLA + CLA Assistant for SIMSDEV relicensing
 * [Public docs in English](public-docs-english.md) - README, CONTRIBUTING, CLA, AGENTS, LICENSE, docs/, infra/README.md, and knowledge/ are English
+* [CHANGELOG and release process](changelog-and-release-process.md) - Unreleased bullet per change; manual git tag triggers GitHub Release + Docker Hub

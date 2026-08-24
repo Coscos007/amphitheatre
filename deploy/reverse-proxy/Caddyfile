@@ -1,0 +1,24 @@
+# TLS reverse proxy for HTTP/WebSocket signalling only.
+#
+# WebRTC media (LiveKit UDP 7882, OME ICE 10000-10003/udp) and RTMP ingest
+# (OME 1935) are raw UDP/TCP, not HTTP — Caddy cannot carry them. Those ports
+# stay published directly on the host (see docker-compose.yml).
+#
+# Enable with: docker compose --profile caddy up -d
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$PUBLIC_APP_HOSTNAME} {
+	reverse_proxy app:3001
+}
+
+{$PUBLIC_LIVEKIT_HOSTNAME} {
+	reverse_proxy livekit:7880
+}
+
+# Only needed if you also run --profile ome.
+{$PUBLIC_OME_HOSTNAME} {
+	reverse_proxy ome:3333
+}

@@ -24,4 +24,16 @@ The API loads the monorepo root `.env` first, then `apps/api/.env` (`apps/api/sr
 
 LiveKit: `LIVEKIT_API_SECRET` must be at least 32 characters and must **not** contain `:`. Compose mounts `LIVEKIT_KEYS` as `"key: secret"`.
 
+### Self-hosting with your own domain
+
+Instead of setting every URL above one by one, you can set just these three (`apps/api/src/env.ts`) and the API derives the rest:
+
+| Variable | Derives | Example |
+|---|---|---|
+| `PUBLIC_APP_HOSTNAME` | `CORS_ORIGIN` (`https://<host>`) | `amp.example.com` |
+| `PUBLIC_LIVEKIT_HOSTNAME` | `LIVEKIT_URL` (`wss://<host>`) | `live.example.com` |
+| `PUBLIC_OME_HOSTNAME` | `OME_RTMP_URL`, `OME_PLAYBACK_URL`, `OME_LLHLS_PLAYBACK_BASE` | `stream.example.com` |
+
+Any variable already set explicitly (e.g. `LIVEKIT_URL`) always wins over the value derived from `PUBLIC_*_HOSTNAME`. Full walkthrough, reverse-proxy examples, and a ready-to-run Compose file: [Self-hosting](self-hosting.md) and [`deploy/`](../deploy/).
+
 Full comments live in `.env.example` and `apps/api/.env.example`. UDP/TLS ports: `infra/livekit/livekit.yaml`, `infra/ome/origin_conf/Server.xml`, [infra/README.md](../infra/README.md).

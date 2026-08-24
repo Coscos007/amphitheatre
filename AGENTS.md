@@ -20,9 +20,12 @@ Session recording is **out of scope**. Sophisticated reconnection is the **last 
 apps/api          Bun + Hono — REST, WebSocket, JWT, SQLite, LiveKit mint, OME poll
 apps/web          Vite + React SPA — desktop theater + its own mobile layout
 packages/shared   TS contract: types, roles, paths, events, errors, limits
-infra/            Docker Compose (LiveKit, Valkey, OME, Caddy), scripts, k6
-docs/             Getting started, configuration, API, identity, broadcast, license, load testing
+infra/            Docker Compose for LOCAL DEV (LiveKit, Valkey, OME, Caddy), scripts, k6
+deploy/           Self-contained Compose stack for SELF-HOSTING pre-built images (no repo clone needed)
+Dockerfile        Single production image: API + built web app, one port
+docs/             Getting started, self-hosting, configuration, API, identity, broadcast, license, load testing
 knowledge/        OKF v0.2 catalog (product, rules, changes) + references/
+CHANGELOG.md      Macro history (Keep a Changelog), English, updated with every feature/fix
 AGENTS.md         This file
 ```
 
@@ -91,6 +94,8 @@ See [docs/configuration.md](docs/configuration.md). Copy `.env.example` (root) a
 The API loads the monorepo root `.env` first, then `apps/api/.env` (`apps/api/src/env.ts`).
 
 LiveKit: `LIVEKIT_API_SECRET` >= 32 chars and **no** `:`. Compose mounts `LIVEKIT_KEYS` as `"key: secret"`.
+
+`PUBLIC_APP_HOSTNAME` / `PUBLIC_LIVEKIT_HOSTNAME` / `PUBLIC_OME_HOSTNAME` (optional) derive `CORS_ORIGIN` / `LIVEKIT_URL` / OME playback+ingest URLs for self-hosting with a real domain; any explicit variable still wins. See [docs/self-hosting.md](docs/self-hosting.md).
 
 UDP/TLS ports: `infra/livekit/livekit.yaml`, `infra/ome/origin_conf/Server.xml`, `infra/README.md`.
 
@@ -173,8 +178,20 @@ When the user states a durable preference, process, or “this feature must work
 3. If the date is new, update `knowledge/changes/index.md`.
 4. Add an entry in `knowledge/log.md` (newest first, heading `YYYY-MM-DD`).
 5. If a new product/rule concept is born, create it and point to it from the corresponding `index.md`.
+6. Add a bullet under `## [Unreleased]` in the root `CHANGELOG.md` (English, [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) categories: `Added` / `Changed` / `Fixed` / `Removed`). This is the macro history for humans; the OKF bundle above stays the detailed record. Every feature or fix needs both.
 
 Bootstrap change date: **2026-08-22**.
+
+### Releases
+
+Amphitheatre publishes a single Docker image (`simstosh/amphitheatre`, API + built web app) to Docker Hub whenever a version tag is pushed. The flow is manual, not automatic on every merge:
+
+1. Move `CHANGELOG.md`'s `## [Unreleased]` content into a new `## [X.Y.Z] - YYYY-MM-DD` section (keep an empty `## [Unreleased]` above it for the next round). Add the `[X.Y.Z]` and updated `[Unreleased]` compare links at the bottom of the file.
+2. Bump `version` in the root `package.json` to match.
+3. Commit, then tag and push: `git tag vX.Y.Z && git push --tags`.
+4. `.github/workflows/release.yml` takes it from there: it extracts that version's section from `CHANGELOG.md` (`scripts/extract-changelog.sh`) to create the GitHub Release (English), and builds/pushes a multi-arch (`amd64`/`arm64`) image tagged `vX.Y.Z`, `X.Y`, and `latest`.
+
+Do not tag or release without the user's explicit request — see "Git and PRs" below.
 
 ## Git and PRs
 

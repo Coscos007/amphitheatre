@@ -70,6 +70,9 @@ export type Env = {
   TRUST_PROXY: boolean;
   COOKIE_SECURE: boolean;
   NODE_ENV: string;
+  PUBLIC_APP_HOSTNAME?: string;
+  PUBLIC_LIVEKIT_HOSTNAME?: string;
+  PUBLIC_OME_HOSTNAME?: string;
   LIVEKIT_API_KEY?: string;
   LIVEKIT_API_SECRET?: string;
   LIVEKIT_URL?: string;
@@ -100,7 +103,22 @@ export type Env = {
 
 export function loadEnv(overrides: Partial<Env> = {}): Env {
   loadDotEnv();
-  const corsRaw = strEnv("CORS_ORIGIN", "http://localhost:5173,http://127.0.0.1:5173");
+
+  // Convenience for self-hosting with a real domain: set only the three
+  // PUBLIC_*_HOSTNAME variables (app, LiveKit, OvenMediaEngine) and every
+  // public URL below is derived automatically. Any explicit URL variable
+  // (CORS_ORIGIN, LIVEKIT_URL, OME_PLAYBACK_URL, ...) always wins over the
+  // derived value. See docs/self-hosting.md.
+  const publicAppHostname = optional("PUBLIC_APP_HOSTNAME");
+  const publicLivekitHostname = optional("PUBLIC_LIVEKIT_HOSTNAME");
+  const publicOmeHostname = optional("PUBLIC_OME_HOSTNAME");
+
+  const corsRaw = strEnv(
+    "CORS_ORIGIN",
+    publicAppHostname
+      ? `https://${publicAppHostname}`
+      : "http://localhost:5173,http://127.0.0.1:5173",
+  );
   const base: Env = {
     PORT: intEnv("API_PORT", intEnv("PORT", 3001)),
     CORS_ORIGINS: corsRaw
@@ -112,17 +130,26 @@ export function loadEnv(overrides: Partial<Env> = {}): Env {
     TRUST_PROXY: boolEnv("TRUST_PROXY", false),
     COOKIE_SECURE: boolEnv("COOKIE_SECURE", false),
     NODE_ENV: strEnv("NODE_ENV", "development"),
+    PUBLIC_APP_HOSTNAME: publicAppHostname,
+    PUBLIC_LIVEKIT_HOSTNAME: publicLivekitHostname,
+    PUBLIC_OME_HOSTNAME: publicOmeHostname,
     LIVEKIT_API_KEY: optional("LIVEKIT_API_KEY"),
     LIVEKIT_API_SECRET: optional("LIVEKIT_API_SECRET"),
-    LIVEKIT_URL: optional("LIVEKIT_URL"),
+    LIVEKIT_URL: optional("LIVEKIT_URL") ?? (publicLivekitHostname ? `wss://${publicLivekitHostname}` : undefined),
     LIVEKIT_HTTP_URL: optional("LIVEKIT_HTTP_URL"),
     OME_API_URL: optional("OME_API_URL"),
     OME_API_ACCESS_TOKEN: optional("OME_API_ACCESS_TOKEN"),
     OME_VHOST: strEnv("OME_VHOST", "default"),
     OME_APP: strEnv("OME_APP", "app"),
-    OME_RTMP_URL: firstDefined("OME_RTMP_URL", "OME_RTMP_INGEST_URL"),
-    OME_PLAYBACK_URL: firstDefined("OME_PLAYBACK_URL", "OME_WEBRTC_PLAYBACK_BASE"),
-    OME_LLHLS_PLAYBACK_BASE: optional("OME_LLHLS_PLAYBACK_BASE"),
+    OME_RTMP_URL:
+      firstDefined("OME_RTMP_URL", "OME_RTMP_INGEST_URL") ??
+      (publicOmeHostname ? `rtmp://${publicOmeHostname}:1935/app` : undefined),
+    OME_PLAYBACK_URL:
+      firstDefined("OME_PLAYBACK_URL", "OME_WEBRTC_PLAYBACK_BASE") ??
+      (publicOmeHostname ? `wss://${publicOmeHostname}/app` : undefined),
+    OME_LLHLS_PLAYBACK_BASE:
+      optional("OME_LLHLS_PLAYBACK_BASE") ??
+      (publicOmeHostname ? `https://${publicOmeHostname}/app` : undefined),
     OME_TIMEOUT_MS: intEnv("OME_TIMEOUT_MS", 1000),
     MAX_ROOMS_PER_CREATOR: intEnv("MAX_ROOMS_PER_CREATOR", 10),
     MAX_ROOMS_PER_IP: intEnv("MAX_ROOMS_PER_IP", 20),

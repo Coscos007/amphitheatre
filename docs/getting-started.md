@@ -1,6 +1,8 @@
 # Getting started
 
-Run Amphitheatre locally. For Compose ports, profiles, and UDP/TLS, see [infra/README.md](../infra/README.md). For env vars, see [Configuration](configuration.md).
+Run Amphitheatre locally **from source**, for development. If you just want to run your own copy on a server (no coding involved), see [Self-hosting](self-hosting.md) instead — you do not need to clone this repository for that.
+
+For Compose ports, profiles, and UDP/TLS, see [infra/README.md](../infra/README.md). For env vars, see [Configuration](configuration.md).
 
 ## Prerequisites
 

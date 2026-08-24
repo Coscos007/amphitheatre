@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Logger version="2">
+	<!-- stdout/stderr is always on; disable the file sink so Docker log drivers own rotation. -->
+	<Path>/var/log/ovenmediaengine</Path>
+	<File enabled="false"/>
+	<Tag name="SRT" level="critical"/>
+	<Tag name="Monitor" level="critical"/>
+	<Tag name=".*" level="info"/>
+</Logger>

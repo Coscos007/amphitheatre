@@ -2,6 +2,8 @@
 
 ## 2026-08-24
 
+* **Creation**: `deploy/` standalone self-hosting stack (Compose + Caddy/Traefik examples), single production `Dockerfile` (API serves the built web app), `PUBLIC_APP_HOSTNAME`/`PUBLIC_LIVEKIT_HOSTNAME`/`PUBLIC_OME_HOSTNAME` env vars, `docs/self-hosting.md`, human-readable `README.md`, root `CHANGELOG.md`, and a tag-triggered `.github/workflows/release.yml` publishing multi-arch images to Docker Hub (`simstosh/amphitheatre`). Rule [changelog-and-release-process](/rules/changelog-and-release-process.md). Change: [self-hosting-docker-release](/changes/2026-08-24/self-hosting-docker-release/self-hosting-docker-release.md).
+
 * **Update**: Entire OKF catalog in `knowledge/` translated to English. Rules [public-docs-english](/rules/public-docs-english.md) and [self-aware-knowledge](/rules/self-aware-knowledge.md). Change: [okf-english](/changes/2026-08-24/okf-english/okf-english.md).
 
 * **Update**: OKF catalog in `knowledge/` translated to English (changes/2026-08-24, catalog root, log, references, historical plan). Rule [public-docs-english](/rules/public-docs-english.md).
