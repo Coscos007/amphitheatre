@@ -1,0 +1,25 @@
+{
+  "name": "coliseum-theater",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Watch party + mini-Discord (OvenMediaEngine + LiveKit + Bun/Hono + Vite)",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @coliseum/api --filter @coliseum/web dev",
+    "dev:api": "pnpm --filter @coliseum/api dev",
+    "dev:web": "pnpm --filter @coliseum/web dev",
+    "typecheck": "pnpm --filter @coliseum/shared typecheck && pnpm --filter @coliseum/api typecheck && pnpm --filter @coliseum/web typecheck",
+    "test": "pnpm --filter @coliseum/api test",
+    "test:api": "pnpm --filter @coliseum/api test",
+    "infra:up": "make up",
+    "infra:down": "make down",
+    "infra:ome": "make ome-up",
+    "infra:smoke": "make smoke"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@11.22.0",
+  "license": "AGPL-3.0-only"
+}

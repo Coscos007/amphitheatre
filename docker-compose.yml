@@ -1,0 +1,167 @@
+# Amphitheatre — local-first media stack.
+# Default (`docker compose up`): Valkey + LiveKit. Voice/chat/camera/screenshare work
+# with OvenMediaEngine stopped. OME is an optional profile (`--profile ome`).
+#
+# Docs consulted: OvenMediaEngine Getting Started with Docker + Server.xml
+# (ovenmedialabs.com), LiveKit config-sample.yaml + self-hosting, Compose profiles.
+# Recording/egress is intentionally not deployed.
+
+name: coliseum
+
+networks:
+  coliseum:
+    name: coliseum
+    driver: bridge
+
+services:
+  redis:
+    # Valkey is RESP-compatible. LiveKit still connects as "redis:6379" (compose service name).
+    image: valkey/valkey:9.1.1-alpine
+    container_name: coliseum-valkey
+    restart: unless-stopped
+    command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf"]
+    volumes:
+      - ./infra/redis/redis.conf:/usr/local/etc/valkey/valkey.conf:ro
+      - valkey-data:/data
+    ports:
+      # LiveKit uses DB 1 inside the container network. API is SQLite today.
+      # Do not publish 6379 on a public NIC in production.
+      - "6379:6379"
+    networks: [coliseum]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  livekit:
+    image: livekit/livekit-server:v1.13.5
+    container_name: coliseum-livekit
+    restart: unless-stopped
+    init: true
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["--config", "/etc/livekit.yaml"]
+    environment:
+      # Format required by livekit-server: "key: secret" (space after colon).
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"      # HTTP API + SDK WebSocket
+      - "7881:7881"      # WebRTC ICE/TCP
+      - "7882:7882/udp"  # WebRTC UDP mux
+      - "127.0.0.1:6789:6789"  # Prometheus /metrics
+      # Embedded TURN (disabled in livekit.yaml). If enabled, also publish:
+      # - "3479:3479/udp"
+      # - "3479:3479/tcp"
+      # - "5349:5349/tcp"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks: [coliseum]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7880/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    # Traefik (production, TLS on signalling only — UDP 7882 still goes to the host):
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.livekit.rule=Host(`livekit.example.com`)
+    #   - traefik.http.routers.livekit.tls.certresolver=letsencrypt
+    #   - traefik.http.services.livekit.loadbalancer.server.port=7880
+
+  # Optional broadcast ingest/playback. Independent of LiveKit: no depends_on.
+  # Start with: docker compose --profile ome up
+  ome:
+    image: ovenmedialabs/ovenmediaengine:v0.21.0
+    container_name: coliseum-ome
+    profiles: ["ome"]
+    restart: unless-stopped
+    init: true
+    environment:
+      OME_HOST_IP: ${OME_HOST_IP:-127.0.0.1}
+      OME_RTMP_PROV_PORT: "1935"
+      OME_ORIGIN_PORT: "9000"
+      OME_LLHLS_STREAM_PORT: "3333"
+      OME_LLHLS_STREAM_TLS_PORT: "3334"
+      OME_WEBRTC_SIGNALLING_PORT: "3333"
+      OME_WEBRTC_SIGNALLING_TLS_PORT: "3334"
+      OME_WEBRTC_TCP_RELAY_PORT: "3478"
+      OME_WEBRTC_CANDIDATE_PORT: "10000-10003/udp"
+      OME_WEBRTC_TCP_ICE_PORT: "10000/tcp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./infra/ome/origin_conf:/opt/ovenmediaengine/bin/origin_conf:ro
+    ports:
+      - "1935:1935"                 # RTMP ingest (OBS)
+      - "3333:3333"                 # WebRTC signalling + LLHLS (HTTP)
+      - "3334:3334"                 # TLS signalling / LLHLS (needs certs)
+      - "3478:3478"                 # OME embedded TURN / TCP relay
+      - "10000-10003:10000-10003/udp"  # WebRTC ICE UDP
+      - "10000:10000/tcp"           # Direct TCP ICE
+      - "8081:8081"                 # REST API (stream live? )
+    networks: [coliseum]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8081'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.ome.rule=Host(`stream.example.com`)
+    #   - traefik.http.routers.ome.tls.certresolver=letsencrypt
+    #   - traefik.http.services.ome.loadbalancer.server.port=3333
+
+  # Optional TLS reverse proxy for signalling/HTTP. WebRTC UDP is NOT proxied.
+  caddy:
+    image: caddy:2.11.4-alpine
+    container_name: coliseum-caddy
+    profiles: ["caddy"]
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [coliseum]
+    depends_on:
+      livekit:
+        condition: service_healthy
+
+  # Optional external TURN if neither LiveKit embedded TURN nor OME TURN is enough.
+  # Enable with --profile coturn after filling REALM / secret.
+  # coturn:
+  #   image: coturn/coturn:4.17.2-alpine
+  #   profiles: ["coturn"]
+  #   network_mode: host
+  #   command:
+  #     - -n
+  #     - --log-file=stdout
+  #     - --listening-port=3478
+  #     - --fingerprint
+  #     - --lt-cred-mech
+  #     - --realm=turn.example.com
+  #     - --use-auth-secret
+  #     - --static-auth-secret=replace-me
+  #     - --no-cli
+
+volumes:
+  valkey-data:
+    name: coliseum-valkey-data
+  caddy-data:
+  caddy-config:

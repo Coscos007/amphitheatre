@@ -1,0 +1,94 @@
+# LiveKit SFU — local-first defaults.
+# Keys are NOT stored here. Docker Compose injects LIVEKIT_KEYS from .env
+# as "LIVEKIT_API_KEY: LIVEKIT_API_SECRET" (space after the colon is required).
+#
+# Production notes (Linux VM / public IP):
+#   - rtc.use_external_ip: true
+#   - rtc.enable_loopback_candidate: false
+#   - Prefer host networking OR keep udp_port mux and publish 7882/udp
+#   - Terminate TLS on Caddy/Traefik for port 7880 only (UDP media stays direct)
+#   - Enable embedded TURN (turn.enabled) OR an external coturn — see docker-compose.yml
+# Recording / egress is intentionally omitted (out of scope).
+
+port: 7880
+log_level: info
+
+# Prometheus scrape for load tests (bound on the container; published to localhost).
+# prometheus_port is deprecated in LiveKit 1.9.x — use prometheus.port.
+prometheus:
+  port: 6789
+
+redis:
+  address: redis:6379
+  # Isolated from the Hono API, which must use DB 0.
+  db: 1
+
+rtc:
+  # UDP mux: one published port instead of 50000-60000. Required for Docker Desktop
+  # (macOS/Windows) where mapping thousands of UDP ports is unusable.
+  # Do not also set port_range_start/end — mux is ignored if a range is set.
+  udp_port: 7882
+  # ICE-over-TCP fallback when UDP is blocked (corporate Wi-Fi, some cellular NATs).
+  tcp_port: 7881
+  # false for local Docker. Set true on cloud VMs so STUN discovers the public IP.
+  use_external_ip: false
+  # Helps browsers on the Docker host reach candidates via 127.0.0.1.
+  # Disable on public servers.
+  enable_loopback_candidate: true
+  # Uncomment and set to the IP phones/other LAN clients can reach.
+  # node_ip: 192.168.1.10
+  # CongestionControlConfig only has enabled/allow_pause (plus allocator/BWE).
+  # allow_tcp_fallback is a sibling under rtc, not nested here (LiveKit v1.13).
+  congestion_control:
+    enabled: true
+    allow_pause: true
+  # Fallback to ICE/TCP (rtc.tcp_port) / TURN when UDP is unstable. Default true.
+  allow_tcp_fallback: true
+
+# Room defaults. Product cap is 2–50 members; the Hono API also enforces this
+# when minting tokens. 0 = unlimited (do not use in production).
+room:
+  auto_create: true
+  empty_timeout: 300
+  departure_timeout: 20
+  max_participants: 50
+  enabled_codecs:
+    - mime: audio/opus
+    - mime: video/vp8
+    - mime: video/h264
+    - mime: video/vp9
+    - mime: audio/red
+
+# Node resource hints. API-side rate limits / brute-force bans live in Hono;
+# these protect the SFU itself.
+limit:
+  # ~400 tracks in+out per CPU by default. Cap for a small dedicated box.
+  num_tracks: 800
+  # ~100 Mbps hint for a home/lab uplink; raise on a dedicated host.
+  bytes_per_sec: 12500000
+  subscription_limit_video: 50
+  subscription_limit_audio: 50
+
+# Embedded TURN — disabled locally (OME already binds 3478). Enable in production
+# when mobile clients fail ICE. Port 3479 avoids clashing with OME's TURN.
+# turn:
+#   enabled: true
+#   udp_port: 3479
+#   tls_port: 5349
+#   domain: turn.example.com
+#   # cert_file / key_file or LIVEKIT_TURN_CERT + LIVEKIT_TURN_KEY
+#   relay_range_start: 30000
+#   relay_range_end: 30100
+#   per_user_relay_allocation_limit: 12
+
+# Signed with LIVEKIT_API_KEY + LIVEKIT_API_SECRET (no extra HMAC env).
+# webhook.api_key must equal LIVEKIT_API_KEY in .env (default: devkey).
+webhook:
+  api_key: devkey
+  urls:
+    - http://host.docker.internal:3001/webhooks/livekit
+
+# audio:
+#   update_interval: 500
+#   active_level: 30
+#   min_percentile: 40

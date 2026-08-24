@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server version="8">
+	<Name>AmphitheatreOME</Name>
+	<Type>origin</Type>
+	<!-- Bind all container interfaces; advertise OME_HOST_IP on ICE/TURN. -->
+	<IP>*</IP>
+	<PrivacyProtection>false</PrivacyProtection>
+	<!-- Used when IceCandidate/TcpRelay contain ${PublicIP} (production). -->
+	<StunServer>stun.l.google.com:19302</StunServer>
+
+	<Modules>
+		<HTTP2>
+			<Enable>true</Enable>
+		</HTTP2>
+		<LLHLS>
+			<Enable>true</Enable>
+		</LLHLS>
+		<P2P>
+			<Enable>false</Enable>
+		</P2P>
+	</Modules>
+
+	<Bind>
+		<Managers>
+			<API>
+				<!-- Polled by the Hono API: is this room's stream live? -->
+				<Port>8081</Port>
+				<WorkerCount>1</WorkerCount>
+			</API>
+		</Managers>
+		<Providers>
+			<RTSPC>
+				<WorkerCount>1</WorkerCount>
+			</RTSPC>
+			<OVT>
+				<WorkerCount>1</WorkerCount>
+			</OVT>
+			<RTMP>
+				<Port>${env:OME_RTMP_PROV_PORT:1935}</Port>
+				<WorkerCount>1</WorkerCount>
+			</RTMP>
+			<WebRTC>
+				<Signalling>
+					<Port>${env:OME_WEBRTC_SIGNALLING_PORT:3333}</Port>
+					<TLSPort>${env:OME_WEBRTC_SIGNALLING_TLS_PORT:3334}</TLSPort>
+					<WorkerCount>1</WorkerCount>
+				</Signalling>
+				<IceCandidates>
+					<!-- Schema OvenMediaEngine v0.21+: TcpRelayForce + Direct TCP ICE. -->
+					<IceCandidate>${env:OME_HOST_IP}:10000-10003/udp</IceCandidate>
+					<IceCandidate>${env:OME_HOST_IP}:10000/tcp</IceCandidate>
+					<TcpRelay>${env:OME_HOST_IP}:3478</TcpRelay>
+					<TcpRelayForce>false</TcpRelayForce>
+					<TcpIceWorkerCount>1</TcpIceWorkerCount>
+					<TcpRelayWorkerCount>1</TcpRelayWorkerCount>
+				</IceCandidates>
+			</WebRTC>
+		</Providers>
+		<Publishers>
+			<OVT>
+				<Port>${env:OME_ORIGIN_PORT:9000}</Port>
+				<WorkerCount>1</WorkerCount>
+			</OVT>
+			<LLHLS>
+				<!-- HTTP/1.1 on 3333; HTTP/2 LLHLS needs TLS on 3334 + certs. -->
+				<Port>${env:OME_LLHLS_STREAM_PORT:3333}</Port>
+				<TLSPort>${env:OME_LLHLS_STREAM_TLS_PORT:3334}</TLSPort>
+				<WorkerCount>1</WorkerCount>
+			</LLHLS>
+			<WebRTC>
+				<Signalling>
+					<Port>${env:OME_WEBRTC_SIGNALLING_PORT:3333}</Port>
+					<TLSPort>${env:OME_WEBRTC_SIGNALLING_TLS_PORT:3334}</TLSPort>
+					<WorkerCount>1</WorkerCount>
+				</Signalling>
+				<IceCandidates>
+					<IceCandidate>${env:OME_HOST_IP}:10000-10003/udp</IceCandidate>
+					<IceCandidate>${env:OME_HOST_IP}:10000/tcp</IceCandidate>
+					<TcpRelay>${env:OME_HOST_IP}:3478</TcpRelay>
+					<TcpRelayForce>false</TcpRelayForce>
+					<TcpIceWorkerCount>1</TcpIceWorkerCount>
+					<TcpRelayWorkerCount>1</TcpRelayWorkerCount>
+				</IceCandidates>
+			</WebRTC>
+		</Publishers>
+	</Bind>
+
+	<!--
+	  REST API auth: Authorization: Basic base64(AccessToken)
+	  Example token coliseum-dev-ome-token-change-me →
+	  Authorization: Basic Y29saXNldW0tZGV2LW9tZS10b2tlbi1jaGFuZ2UtbWU=
+	  Keep this in sync with OME_API_ACCESS_TOKEN in .env
+	-->
+	<Managers>
+		<Host>
+			<Names>
+				<Name>*</Name>
+			</Names>
+			<!--
+			<TLS>
+				<CertPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.crt</CertPath>
+				<KeyPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.key</KeyPath>
+				<ChainCertPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.ca-bundle</ChainCertPath>
+			</TLS>
+			-->
+		</Host>
+		<API>
+			<AccessToken>coliseum-dev-ome-token-change-me</AccessToken>
+			<CrossDomains>
+				<Url>*</Url>
+				<Url>http://localhost:5173</Url>
+				<Url>http://127.0.0.1:5173</Url>
+			</CrossDomains>
+		</API>
+	</Managers>
+
+	<VirtualHosts>
+		<VirtualHost>
+			<Name>default</Name>
+			<Distribution>coliseum-theater</Distribution>
+			<Host>
+				<Names>
+					<Name>*</Name>
+				</Names>
+				<!-- Production: mount certs into origin_conf/certs and uncomment.
+				<TLS>
+					<CertPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.crt</CertPath>
+					<KeyPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.key</KeyPath>
+					<ChainCertPath>/opt/ovenmediaengine/bin/origin_conf/certs/cert.ca-bundle</ChainCertPath>
+				</TLS>
+				-->
+			</Host>
+
+			<!-- Production: signed RTMP URLs so stream keys are not guessable.
+			     See https://ovenmedialabs.com/docs/ome/access-control/signedpolicy
+			<SignedPolicy>
+				<PolicyQueryKeyName>policy</PolicyQueryKeyName>
+				<SignatureQueryKeyName>signature</SignatureQueryKeyName>
+				<SecretKey>replace-with-ome-signed-policy-secret</SecretKey>
+				<Enables>
+					<Providers>rtmp</Providers>
+					<Publishers>webrtc,llhls</Publishers>
+				</Enables>
+			</SignedPolicy>
+			-->
+
+			<!-- Production: Hono decides if OBS may publish / viewers may play.
+			     POST JSON {client, request:{direction,protocol,status,url}} → {allowed:true|false}
+			     HMAC-SHA1 header X-OME-Signature with SecretKey.
+			<AdmissionWebhooks>
+				<ControlServerUrl>http://host.docker.internal:3001/webhooks/ome/admission</ControlServerUrl>
+				<SecretKey>replace-with-ome-admission-hmac-secret</SecretKey>
+				<Timeout>3000</Timeout>
+				<Enables>
+					<Providers>rtmp</Providers>
+					<Publishers>webrtc,llhls</Publishers>
+				</Enables>
+			</AdmissionWebhooks>
+			-->
+
+			<Applications>
+				<Application>
+					<Name>app</Name>
+					<Type>live</Type>
+					<OutputProfiles>
+						<!-- ABR: 1080 stays bypass (OBS encode). 720/480 are software transcodes (CPU-heavy).
+						     Playlist FileName llhls keeps existing /llhls.m3u8 URLs. OBS GOP must be 1-2 s. -->
+						<OutputProfile>
+							<Name>abr_stream</Name>
+							<OutputStreamName>${OriginStreamName}</OutputStreamName>
+							<!-- HLS (AAC) at /llhls.m3u8. WebRTC ABR at ws://HOST:3333/app/{stream}/webrtc (Opus).
+							     Do not point OvenPlayer WebRTC at /llhls — that playlist has no Opus. -->
+							<Playlist>
+								<Name>llhls</Name>
+								<FileName>llhls</FileName>
+								<Options>
+									<HLSChunklistPathDepth>0</HLSChunklistPathDepth>
+								</Options>
+								<Rendition>
+									<Name>1080p</Name>
+									<Video>bypass_video</Video>
+									<Audio>aac_audio</Audio>
+								</Rendition>
+								<Rendition>
+									<Name>720p</Name>
+									<Video>video_720</Video>
+									<Audio>aac_audio</Audio>
+								</Rendition>
+								<Rendition>
+									<Name>480p</Name>
+									<Video>video_480</Video>
+									<Audio>aac_audio</Audio>
+								</Rendition>
+							</Playlist>
+							<Playlist>
+								<Name>webrtc</Name>
+								<FileName>webrtc</FileName>
+								<Options>
+									<WebRtcAutoAbr>true</WebRtcAutoAbr>
+								</Options>
+								<Rendition>
+									<Name>1080p</Name>
+									<Video>bypass_video</Video>
+									<Audio>opus_audio</Audio>
+								</Rendition>
+								<Rendition>
+									<Name>720p</Name>
+									<Video>video_720</Video>
+									<Audio>opus_audio</Audio>
+								</Rendition>
+								<Rendition>
+									<Name>480p</Name>
+									<Video>video_480</Video>
+									<Audio>opus_audio</Audio>
+								</Rendition>
+							</Playlist>
+							<Encodes>
+								<Video>
+									<Name>bypass_video</Name>
+									<Bypass>true</Bypass>
+								</Video>
+								<Video>
+									<Name>video_720</Name>
+									<Codec>h264</Codec>
+									<Bitrate>2500000</Bitrate>
+									<Width>1280</Width>
+									<Height>720</Height>
+									<Framerate>30</Framerate>
+									<Preset>faster</Preset>
+									<BFrames>0</BFrames>
+									<ThreadCount>2</ThreadCount>
+									<Profile>baseline</Profile>
+								</Video>
+								<Video>
+									<Name>video_480</Name>
+									<Codec>h264</Codec>
+									<Bitrate>800000</Bitrate>
+									<Width>854</Width>
+									<Height>480</Height>
+									<Framerate>30</Framerate>
+									<Preset>faster</Preset>
+									<BFrames>0</BFrames>
+									<ThreadCount>2</ThreadCount>
+									<Profile>baseline</Profile>
+								</Video>
+								<Audio>
+									<Name>aac_audio</Name>
+									<Codec>aac</Codec>
+									<Bitrate>128000</Bitrate>
+									<Samplerate>48000</Samplerate>
+									<Channel>2</Channel>
+									<BypassIfMatch>
+										<Codec>eq</Codec>
+									</BypassIfMatch>
+								</Audio>
+								<Audio>
+									<Name>opus_audio</Name>
+									<Codec>opus</Codec>
+									<Bitrate>128000</Bitrate>
+									<Samplerate>48000</Samplerate>
+									<Channel>2</Channel>
+								</Audio>
+							</Encodes>
+						</OutputProfile>
+					</OutputProfiles>
+					<Providers>
+						<RTMP>
+							<!-- One OBS ingest per roomId; a second publisher with the same key is rejected. -->
+							<BlockDuplicateStreamName>true</BlockDuplicateStreamName>
+						</RTMP>
+						<WebRTC>
+							<Timeout>30000</Timeout>
+						</WebRTC>
+					</Providers>
+					<Publishers>
+						<AppWorkerCount>1</AppWorkerCount>
+						<!-- Raise toward CPU core count if many concurrent WebRTC viewers. -->
+						<StreamWorkerCount>8</StreamWorkerCount>
+						<WebRTC>
+							<Timeout>30000</Timeout>
+							<!-- RTX helps lossy mobile networks; ULPFEC left off (CPU). -->
+							<Rtx>true</Rtx>
+							<Ulpfec>false</Ulpfec>
+							<JitterBuffer>false</JitterBuffer>
+							<!-- Default playlist = ws://HOST:3333/app/{stream} (H.264 ladder + Opus). -->
+							<CreateDefaultPlaylist>true</CreateDefaultPlaylist>
+						</WebRTC>
+						<LLHLS>
+							<!-- 0.2 s parts = lower LL-HLS delay. Requires OBS keyframe 1-2 s (GOP <= SegmentDuration). -->
+							<ChunkDuration>0.2</ChunkDuration>
+							<!-- PartHoldBack SHOULD be >= 3 * ChunkDuration (LL-HLS spec). -->
+							<PartHoldBack>0.6</PartHoldBack>
+							<SegmentDuration>2</SegmentDuration>
+							<SegmentCount>5</SegmentCount>
+							<CrossDomains>
+								<Url>*</Url>
+							</CrossDomains>
+							<!-- false: our FileName llhls ABR playlist wins over llhls_default. -->
+							<CreateDefaultPlaylist>false</CreateDefaultPlaylist>
+						</LLHLS>
+					</Publishers>
+				</Application>
+			</Applications>
+		</VirtualHost>
+	</VirtualHosts>
+</Server>

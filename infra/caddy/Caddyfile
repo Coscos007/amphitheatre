@@ -1,0 +1,31 @@
+# TLS reverse proxy for HTTP/WebSocket signalling only.
+# WebRTC UDP (LiveKit 7882, OME 10000-10003) and RTMP 1935 must stay published
+# directly on the host — Caddy cannot carry ICE/media UDP.
+#
+# Local: add `127.0.0.1 livekit.localhost` to /etc/hosts.
+# Production: set COLISEUM_*_HOST and CADDY_ACME_EMAIL, then use real DNS.
+
+{
+	# Avoid Let's Encrypt against *.localhost. For a public domain, remove this
+	# and set CADDY_ACME_EMAIL in .env instead.
+	local_certs
+}
+
+{$COLISEUM_LIVEKIT_HOST:livekit.localhost} {
+	reverse_proxy livekit:7880
+}
+
+# Future Hono API (join the `coliseum` network). Uncomment when apps/api exists.
+# {$COLISEUM_API_HOST:api.localhost} {
+# 	reverse_proxy host.docker.internal:3001
+# }
+
+# Future Vite/static SPA. Uncomment when apps/web exists.
+# {$COLISEUM_APP_HOST:app.localhost} {
+# 	reverse_proxy host.docker.internal:5173
+# }
+
+# OME LLHLS + WebRTC signalling. Uncomment only with `--profile ome`.
+# {$COLISEUM_STREAM_HOST:stream.localhost} {
+# 	reverse_proxy ome:3333
+# }

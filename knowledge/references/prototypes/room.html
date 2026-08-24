@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Amphitheatre - Teste</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700;800&amp;family=Raleway:wght@400;500;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#693c0f",
+                        "inverse-on-surface": "#3a2e25",
+                        "on-secondary": "#4d2700",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#ffdcc2",
+                        "inverse-primary": "#904d00",
+                        "on-tertiary-fixed": "#001e2e",
+                        "on-primary-container": "#623300",
+                        "tertiary": "#86cfff",
+                        "tertiary-container": "#00b6fe",
+                        "primary": "#ffb77c",
+                        "on-surface-variant": "#ddc1ae",
+                        "error": "#ffb4ab",
+                        "secondary": "#fcb882",
+                        "surface-container-high": "#33281f",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#004462",
+                        "secondary-container": "#6c3e11",
+                        "background": "#1b110a",
+                        "surface-variant": "#3f3229",
+                        "on-primary-fixed-variant": "#6d3900",
+                        "outline": "#a48c7a",
+                        "inverse-surface": "#f3dfd1",
+                        "surface-dim": "#1b110a",
+                        "primary-container": "#ff8e04",
+                        "on-primary-fixed": "#2e1500",
+                        "primary-fixed-dim": "#ffb77c",
+                        "on-surface": "#f3dfd1",
+                        "on-secondary-container": "#ecab75",
+                        "tertiary-fixed": "#c7e7ff",
+                        "on-tertiary": "#00344c",
+                        "tertiary-fixed-dim": "#86cfff",
+                        "on-primary": "#4d2700",
+                        "surface-bright": "#43372e",
+                        "on-secondary-fixed": "#2e1500",
+                        "on-tertiary-fixed-variant": "#004c6d",
+                        "primary-fixed": "#ffdcc2",
+                        "secondary-fixed-dim": "#fcb882",
+                        "surface-container-highest": "#3f3229",
+                        "surface-container-low": "#241911",
+                        "surface": "#1b110a",
+                        "outline-variant": "#564334",
+                        "surface-container-lowest": "#150c06",
+                        "on-background": "#f3dfd1",
+                        "surface-container": "#281d15",
+                        "surface-tint": "#ffb77c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "stack-gap": "8px",
+                        "sidebar-width": "320px",
+                        "unit": "4px",
+                        "activity-bar-width": "72px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": [
+                            "Hanken Grotesk"
+                        ],
+                        "code-snippet": [
+                            "Quicksand"
+                        ],
+                        "body-lg": [
+                            "Raleway"
+                        ],
+                        "headline-lg": [
+                            "Hanken Grotesk"
+                        ],
+                        "label-caps": [
+                            "Quicksand"
+                        ],
+                        "headline-lg-mobile": [
+                            "Hanken Grotesk"
+                        ],
+                        "title-md": [
+                            "Hanken Grotesk"
+                        ],
+                        "body-sm": [
+                            "Raleway"
+                        ]
+                    },
+                    "fontSize": {
+                        "display-lg": [
+                            "48px",
+                            {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                            }
+                        ],
+                        "code-snippet": [
+                            "13px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "body-lg": [
+                            "16px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "headline-lg": [
+                            "32px",
+                            {
+                                "lineHeight": "40px",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "label-caps": [
+                            "12px",
+                            {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.08em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "headline-lg-mobile": [
+                            "24px",
+                            {
+                                "lineHeight": "32px",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "title-md": [
+                            "18px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "body-sm": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                            }
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: #e5e2e1;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #201f1f 0%, #0e0e0e 70%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #474746;
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 1px #ff8e04, inset 0 0 8px rgba(255, 142, 4, 0.1);
+            border-color: #ff8e04;
+        }
+
+        .btn-primary-glow {
+            box-shadow: 0 4px 14px rgba(255, 142, 4, 0.2);
+        }
+
+        .btn-primary-glow:hover {
+            box-shadow: 0 6px 20px rgba(255, 142, 4, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .arena-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.8) 0%, rgba(28, 27, 27, 0.9) 100%);
+            border: 1px solid rgba(153, 144, 119, 0.1);
+        }
+
+        .arena-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 142, 4, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 142, 4, 0.03);
+        }
+
+        .stage-glow {
+            box-shadow: 0 0 60px rgba(255, 142, 4, 0.05), inset 0 0 30px rgba(255, 142, 4, 0.02);
+            border: 1px solid rgba(255, 142, 4, 0.1);
+        }
+
+        /* Floating Dock Blur */
+        .dock-blur {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen text-on-surface font-body-sm bg-background">
+    <!-- Integrated Header -->
+    <header class="flex justify-between items-center px-8 py-6 w-full shrink-0 z-50 absolute top-0 left-0 right-0">
+        <div class="flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur border border-surface-variant shadow-sm">
+                <span class="material-symbols-outlined text-primary-container">stadium</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span
+                    class="font-headline-lg text-title-md font-bold text-on-surface tracking-wide uppercase">Amphitheatre</span>
+                <div class="h-4 w-px bg-surface-variant"></div>
+                <h2 class="font-title-md text-title-md text-on-surface font-medium">Teste</h2>
+                <span
+                    class="border border-surface-variant rounded-full px-2.5 py-0.5 text-[10px] font-label-caps text-on-surface-variant uppercase tracking-wider bg-surface-container/50 backdrop-blur flex items-center gap-1.5 ml-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-surface-variant"></span>
+                    Waiting for broadcast
+                </span>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content Area -->
+    <main class="flex flex-1 pt-24 pb-6 px-6 gap-6 overflow-hidden h-full">
+        <!-- Central Stage Area -->
+        <section class="flex-1 flex flex-col relative">
+            <!-- Stage Container -->
+            <div
+                class="w-full h-full bg-[#0a0a0a] rounded-2xl relative flex flex-col items-center justify-center stage-glow overflow-hidden">
+                <!-- Background decorative gradient -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container-lowest/50 pointer-events-none">
+                </div>
+                <!-- Stage Content -->
+                <div class="text-center flex flex-col items-center max-w-md p-container-padding relative z-10">
+                    <div
+                        class="w-20 h-20 rounded-full bg-surface-container-low flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,142,4,0.1)] border border-surface-variant/50">
+                        <span class="material-symbols-outlined text-surface-variant"
+                            style="font-size: 36px;">theaters</span>
+                    </div>
+                    <h3 class="font-headline-lg text-[28px] text-on-surface mb-3 tracking-tight font-bold">The stage is
+                        yours</h3>
+                    <p class="font-body-lg text-on-surface-variant max-w-[280px]">Start your camera or share a screen to
+                        begin the broadcast.</p>
+                </div>
+                <!-- Integrated Bottom Control Bar -->
+                <div
+                    class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-surface-container-high/80 backdrop-blur-xl border border-surface-variant/50 p-2 rounded-2xl z-20 shadow-2xl">
+                    <button aria-label="Unmute microphone"
+                        class="flex flex-col items-center gap-1 min-w-[64px] px-2 py-2 rounded-xl text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition-all group">
+                        <span class="material-symbols-outlined text-[20px]">mic_off</span>
+                        <span class="text-[10px] font-label-caps opacity-70 group-hover:opacity-100">Mic</span>
+                    </button>
+                    <button aria-label="Start camera"
+                        class="flex flex-col items-center gap-1 min-w-[64px] px-2 py-2 rounded-xl text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition-all group">
+                        <span class="material-symbols-outlined text-[20px]">videocam_off</span>
+                        <span class="text-[10px] font-label-caps opacity-70 group-hover:opacity-100">Camera</span>
+                    </button>
+                    <div class="w-px h-8 bg-surface-variant/50 mx-1"></div>
+                    <button aria-label="Share screen"
+                        class="flex flex-col items-center gap-1 min-w-[64px] px-2 py-2 rounded-xl text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition-all group">
+                        <span class="material-symbols-outlined text-[20px]">screen_share</span>
+                        <span class="text-[10px] font-label-caps opacity-70 group-hover:opacity-100">Share</span>
+                    </button>
+                    <div class="w-px h-8 bg-surface-variant/50 mx-1"></div>
+                    <button
+                        class="flex flex-col items-center gap-1 min-w-[64px] px-2 py-2 rounded-xl text-on-surface-variant hover:text-primary-container hover:bg-surface-container transition-all group">
+                        <span class="material-symbols-outlined text-[20px]">person_add</span>
+                        <span class="text-[10px] font-label-caps opacity-70 group-hover:opacity-100">Invite</span>
+                    </button>
+                    <button
+                        class="flex flex-col items-center gap-1 min-w-[64px] px-2 py-2 rounded-xl text-error hover:bg-error/10 hover:text-error transition-all group ml-1">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>
+                        <span class="text-[10px] font-label-caps opacity-70 group-hover:opacity-100">Leave</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- Right Side: Audience Panel -->
+        <aside class="w-[340px] flex flex-col flex-shrink-0 relative z-20 shrink-0">
+            <div
+                class="bg-surface-container-low/80 backdrop-blur-xl border border-surface-variant rounded-2xl flex flex-col h-full shadow-2xl overflow-hidden">
+                <!-- Tabs Header -->
+                <div class="flex border-b border-surface-variant/50">
+                    <button
+                        class="flex-1 py-4 text-center font-label-caps text-label-caps text-primary-container border-b-2 border-primary-container transition-colors uppercase tracking-wider flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">groups</span>
+                        Audience (2)
+                    </button>
+                    <button
+                        class="flex-1 py-4 text-center font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-colors uppercase tracking-wider flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">chat</span>
+                        Chat
+                    </button>
+                </div>
+                <!-- Tab Content: Audience -->
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <div class="overflow-y-auto flex-1 p-4 space-y-3">
+                        <!-- User: Sims (Owner) -->
+                        <div
+                            class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-highest/30 transition-colors cursor-pointer border border-transparent hover:border-surface-variant/50 group">
+                            <div
+                                class="w-10 h-10 rounded-full bg-surface-container border border-surface-variant flex items-center justify-center font-title-md text-base font-bold text-on-surface shrink-0">
+                                S
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-body-sm text-sm font-medium truncate text-on-surface">Sims</span>
+                                    <span
+                                        class="border border-primary-container/30 bg-primary-container/10 text-primary-container px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase flex items-center gap-1 shrink-0">
+                                        <span class="material-symbols-outlined text-[10px]">local_police</span>
+                                        Owner
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- User: Joao (You) -->
+                        <div
+                            class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-highest/30 border border-primary-container/30 cursor-pointer shadow-[0_0_15px_rgba(255,142,4,0.05)]">
+                            <div class="relative">
+                                <img class="w-10 h-10 rounded-full object-cover border border-primary-container"
+                                    data-alt="A stylized 3D avatar of a professional gamer"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUn1QKJwnIllMb2jQMTYTylg6O8-rBY-t7eUmmgtp6M59xeoC0AZ6K-B3R9ebv50MlBsQ9hXOu1_ScSYgKdMspWLu0N5JaKAoXx8nrjPTwRYbcMjhE2o6VyW-DhLHvRJ_98V3F7x8YcTbdTNpizlL96blTjOaXsn4S-WVrHjLB1ulw-O1bVoSWO5bjcrrZ7uCSGIi2P_kq-pwf73Ct82BgmHCVU3rec1lthEMWEMVs4A1DY8Jh4SLK5A" />
+                                <div
+                                    class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-container-high">
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-body-sm text-sm font-medium truncate text-primary-container">Joao
+                                        <span
+                                            class="text-on-surface-variant font-normal text-xs ml-1">(You)</span></span>
+                                    <span
+                                        class="border border-outline-variant text-on-surface-variant px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase flex items-center gap-1 shrink-0">
+                                        <span class="material-symbols-outlined text-[10px]">shield</span>
+                                        Mod
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hidden Chat Area (Empty State) -->
+                <div class="hidden flex-1 flex-col overflow-hidden">
+                    <div class="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-center">
+                        <div
+                            class="w-16 h-16 rounded-full bg-surface-container-highest/30 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[32px] text-surface-variant">forum</span>
+                        </div>
+                        <h4 class="font-title-md text-base text-on-surface mb-2">No messages yet</h4>
+                        <p class="font-body-sm text-sm text-on-surface-variant max-w-[200px]">Messages sent here are
+                            visible to everyone in the room.</p>
+                    </div>
+                    <div class="p-4 bg-surface-container-highest/30 border-t border-surface-variant/50">
+                        <div class="relative">
+                            <textarea
+                                class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 pr-12 text-on-surface focus:outline-none input-glow font-body-sm text-sm transition-all resize-none placeholder:text-on-surface-variant/50"
+                                placeholder="Type a message..." rows="1"></textarea>
+                            <button
+                                class="absolute right-2 bottom-2 w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center hover:bg-primary transition-colors btn-primary-glow">
+                                <span class="material-symbols-outlined text-[16px]">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+</body>
+
+</html>

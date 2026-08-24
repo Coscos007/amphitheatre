@@ -1,0 +1,23 @@
+.env
+.env.local
+*.log
+.DS_Store
+node_modules
+dist
+build
+coverage
+.turbo
+*.tsbuildinfo
+
+# SQLite (API persistence)
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+infra/ome/certs/*.crt
+infra/ome/certs/*.key
+infra/ome/certs/*.pem
+infra/ome/certs/*.ca-bundle
+!infra/ome/certs/.gitkeep

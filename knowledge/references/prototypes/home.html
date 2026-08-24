@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Amphitheatre</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&amp;family=Raleway:wght@400;500;700&amp;family=Quicksand:wght@400;500;700&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script
+        id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-bright": "#43372e", "primary-fixed-dim": "#ffb77b", "tertiary-fixed": "#ffdad4", tertiary: "#ffb4a8", "on-tertiary-fixed": "#410000", "inverse-on-surface": "#3a2e25", "on-secondary-container": "#ecab75", outline: "#a48c7a", "inverse-primary": "#8f4d00", "on-surface": "#f3dfd1", primary: "#ffb77b", "primary-container": "#ff8e00", surface: "#1b110a", "on-primary": "#4d2700", "on-secondary-fixed-variant": "#693c0f", "surface-container-low": "#241a11", "on-primary-fixed": "#2e1500", "surface-container-high": "#33281f", "surface-tint": "#ffb77b", secondary: "#fbb981", "surface-variant": "#3e3229", "on-error-container": "#ffdad6", "surface-container-highest": "#3e3229", "on-tertiary-fixed-variant": "#930100", "surface-dim": "#1b110a", "tertiary-container": "#ff8977", "on-surface-variant": "#ddc1ae", "surface-container": "#281e15", "on-secondary-fixed": "#2e1500", "secondary-container": "#6c3e11", "secondary-fixed-dim": "#fbb981", background: "#1b110a", "tertiary-fixed-dim": "#ffb4a8", "error-container": "#93000a", "secondary-fixed": "#ffdcc2", "surface-container-lowest": "#150c06", "on-tertiary": "#690100", "outline-variant": "#564334", "on-tertiary-container": "#850100", "on-error": "#690005", error: "#ffb4ab", "on-primary-container": "#623300", "on-primary-fixed-variant": "#6d3a00", "primary-fixed": "#ffdcc2", "inverse-surface": "#f3dfd1", "on-background": "#f3dfd1", "on-secondary": "#4d2700" }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" }, spacing: { "stack-gap": "8px", gutter: "16px", "activity-bar-width": "72px", "sidebar-width": "280px", unit: "4px", "container-padding": "24px" }, fontFamily: { "label-caps": ["Quicksand"], "body-sm": ["Raleway"], "display-lg": ["Hanken Grotesk"], "body-lg": ["Raleway"], "headline-lg": ["Hanken Grotesk"], "code-snippet": ["Quicksand"], "title-md": ["Hanken Grotesk"], "headline-lg-mobile": ["Hanken Grotesk"], headline: ["Hanken Grotesk"], display: ["Hanken Grotesk"], body: ["Raleway"], label: ["Quicksand"] }, fontSize: { "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.08em", fontWeight: "600" }], "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }], "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }], "code-snippet": ["13px", { lineHeight: "20px", fontWeight: "400" }], "title-md": ["18px", { lineHeight: "24px", fontWeight: "600" }], "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }] } } } };</script>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: #e5e2e1;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #201f1f 0%, #0e0e0e 70%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #474746;
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 1px #ff8e00, inset 0 0 8px rgba(255, 142, 0, 0.1);
+            border-color: #ff8e00;
+        }
+
+        .btn-primary-glow {
+            box-shadow: 0 4px 14px rgba(255, 142, 0, 0.2);
+        }
+
+        .btn-primary-glow:hover {
+            box-shadow: 0 6px 20px rgba(255, 142, 0, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .arena-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.8) 0%, rgba(28, 27, 27, 0.9) 100%);
+            border: 1px solid rgba(153, 144, 119, 0.1);
+        }
+
+        .arena-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 142, 0, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 142, 0, 0.03);
+        }
+
+        .hero-text {
+            background: linear-gradient(180deg, #ffffff 0%, #d0c6ab 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen flex flex-col font-body-sm text-body-sm text-on-surface">
+    <!-- Top Navigation Bar (Floating) -->
+    <header class="flex justify-between items-center px-8 py-6 w-full shrink-0 z-50 absolute top-0 left-0 right-0">
+        <div class="flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur border border-surface-variant shadow-sm">
+                <span class="material-symbols-outlined text-primary-container">stadium</span>
+            </div>
+            <span
+                class="font-headline-lg text-title-md font-bold text-on-surface tracking-wide uppercase">Amphitheatre</span>
+        </div>
+        <nav
+            class="hidden md:flex items-center gap-8 bg-surface-container-lowest/60 backdrop-blur-md px-8 py-3 rounded-full border border-surface-variant">
+            <button class="text-primary-container font-label-caps text-xs flex items-center gap-2 group">
+                <span class="material-symbols-outlined text-sm">explore</span>
+                DISCOVER
+            </button>
+            <div class="w-1 h-1 bg-surface-variant rounded-full"></div>
+            <button class="text-on-surface-variant hover:text-on-surface font-label-caps text-xs transition-colors">
+                LIBRARY
+            </button>
+            <div class="w-1 h-1 bg-surface-variant rounded-full"></div>
+            <button class="text-on-surface-variant hover:text-on-surface font-label-caps text-xs transition-colors">
+                CREATE
+            </button>
+        </nav>
+        <div
+            class="flex items-center gap-6 bg-surface-container-lowest/80 backdrop-blur px-4 py-2 rounded-full border border-surface-variant">
+            <!-- Profile Status -->
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img class="w-8 h-8 rounded-full object-cover border border-surface-variant"
+                        data-alt="A stylized 3D avatar of a professional gamer"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUn1QKJwnIllMb2jQMTYTylg6O8-rBY-t7eUmmgtp6M59xeoC0AZ6K-B3R9ebv50MlBsQ9hXOu1_ScSYgKdMspWLu0N5JaKAoXx8nrjPTwRYbcMjhE2o6VyW-DhLHvRJ_98V3F7x8YcTbdTNpizlL96blTjOaXsn4S-WVrHjLB1ulw-O1bVoSWO5bjcrrZ7uCSGIi2P_kq-pwf73Ct82BgmHCVU3rec1lthEMWEMVs4A1DY8Jh4SLK5A">
+                    <div
+                        class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-surface-container">
+                    </div>
+                </div>
+                <div class="hidden lg:block min-w-0 text-left">
+                    <div class="font-body-sm text-xs font-medium text-on-surface truncate">Joao</div>
+                    <div class="text-[10px] text-on-surface-variant truncate">Online</div>
+                </div>
+            </div>
+            <!-- Controls -->
+            <div class="flex items-center gap-2 border-l border-surface-variant pl-4">
+                <button class="text-on-surface-variant hover:text-primary-container transition-colors" title="Settings">
+                    <span class="material-symbols-outlined text-[18px]">settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <main class="flex-1 relative flex flex-col items-center justify-center pt-24 pb-12 px-8 overflow-hidden h-full">
+        <!-- Background decorative grid -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0">
+        </div>
+        <div class="w-full max-w-[1400px] h-full flex flex-col xl:flex-row gap-12 relative z-10">
+            <!-- Left Side: Hero & Arena Selection -->
+            <div class="flex-1 flex flex-col justify-center gap-12">
+                <div class="max-w-2xl">
+                    <h1 class="font-display-lg text-[64px] leading-[1.1] font-extrabold mb-6 tracking-tight hero-text">
+                        Your stage<br>is ready.
+                    </h1>
+                    <p class="font-body-lg text-on-surface-variant max-w-md text-lg">
+                        Connect with your community. Open a room or join with a code. Voice, chat, and the stage stay
+                        together.
+                    </p>
+                </div>
+                <!-- Arena Selection Carousel -->
+                <div class="mt-4">
+                    <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+                        <button
+                            class="arena-card min-w-[160px] h-[120px] rounded-xl p-4 flex flex-col justify-between border-primary-container/30 shadow-lg relative overflow-hidden group">
+                            <div
+                                class="absolute inset-0 bg-primary-container/5 group-hover:bg-primary-container/10 transition-colors">
+                            </div>
+                            <span
+                                class="material-symbols-outlined text-primary-container relative z-10">sports_esports</span>
+                            <span
+                                class="font-label-caps text-on-surface text-left relative z-10 text-[11px]">GAMING</span>
+                        </button>
+                        <button
+                            class="arena-card min-w-[160px] h-[120px] rounded-xl p-4 flex flex-col justify-between group">
+                            <span
+                                class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors">menu_book</span>
+                            <span
+                                class="font-label-caps text-on-surface-variant group-hover:text-on-surface transition-colors text-left text-[11px]">STUDY
+                                GROUP</span>
+                        </button>
+                        <button
+                            class="arena-card min-w-[160px] h-[120px] rounded-xl p-4 flex flex-col justify-between group">
+                            <span
+                                class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors">code</span>
+                            <span
+                                class="font-label-caps text-on-surface-variant group-hover:text-on-surface transition-colors text-left text-[11px]">DEVELOPMENT</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Side: Command Dashboard -->
+            <div class="w-full xl:w-[480px] flex flex-col justify-center shrink-0">
+                <div
+                    class="bg-surface-container-low/80 backdrop-blur-xl border border-surface-variant rounded-2xl p-1 shadow-2xl">
+                    <div class="p-8 flex flex-col gap-8">
+                        <!-- User Profile Display Name -->
+                        <div class="bg-surface-container-highest/30 rounded-xl p-4 border border-surface-variant/50">
+                            <label class="block font-label-caps text-[10px] text-on-surface-variant mb-2">DISPLAY
+                                NAME</label>
+                            <input
+                                class="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none input-glow font-body-sm text-sm transition-all"
+                                type="text" value="Joao">
+                        </div>
+                        <!-- Unified Form Area -->
+                        <div class="grid gap-6">
+                            <!-- Open Room -->
+                            <div class="relative group">
+                                <div
+                                    class="absolute -inset-0.5 bg-gradient-to-r from-primary-container/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur">
+                                </div>
+                                <div class="relative bg-surface p-6 rounded-xl border border-surface-variant">
+                                    <h2
+                                        class="font-title-md text-on-surface mb-4 flex items-center gap-2 text-base font-medium">
+                                        <span
+                                            class="material-symbols-outlined text-[18px] text-primary-container">add_circle</span>
+                                        Initialize Room
+                                    </h2>
+                                    <div class="space-y-4">
+                                        <input
+                                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 text-on-surface focus:outline-none input-glow font-body-sm text-sm"
+                                            placeholder="Room Name" type="text" value="Friday fight night">
+                                        <div class="flex gap-3">
+                                            <input
+                                                class="flex-1 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 text-on-surface focus:outline-none input-glow font-body-sm text-sm"
+                                                placeholder="Passkey (Optional)" type="password">
+                                            <input
+                                                class="w-24 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 text-on-surface focus:outline-none input-glow font-body-sm text-sm text-center"
+                                                placeholder="Max" type="number" value="20">
+                                        </div>
+                                        <button
+                                            class="w-full bg-primary-container text-on-primary-container font-label-caps py-3 px-4 rounded-lg mt-2 flex items-center justify-center gap-2 btn-primary-glow hover:bg-primary transition-all text-xs">
+                                            CREATE ROOM
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Divider -->
+                            <div class="flex items-center gap-4 px-4">
+                                <div class="flex-1 h-[1px] bg-surface-variant"></div>
+                                <span class="font-label-caps text-[10px] text-on-surface-variant">OR</span>
+                                <div class="flex-1 h-[1px] bg-surface-variant"></div>
+                            </div>
+                            <!-- Enter Room -->
+                            <div
+                                class="bg-surface p-6 rounded-xl border border-surface-variant relative overflow-hidden">
+                                <h2
+                                    class="font-title-md text-on-surface mb-4 flex items-center gap-2 text-base font-medium">
+                                    <span
+                                        class="material-symbols-outlined text-[18px] text-on-surface-variant">login</span>
+                                    Connect to Room
+                                </h2>
+                                <div class="space-y-4">
+                                    <input
+                                        class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 text-on-surface focus:outline-none input-glow font-body-sm text-sm tracking-wide uppercase"
+                                        placeholder="Access Code / Link" type="text" value="a1b2c3">
+                                    <input
+                                        class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 text-on-surface focus:outline-none input-glow font-body-sm text-sm"
+                                        placeholder="Passkey (If Locked)" type="password">
+                                    <button
+                                        class="w-full bg-surface-bright text-on-surface font-label-caps py-3 px-4 rounded-lg mt-2 hover:bg-surface-variant hover:text-primary-container border border-surface-variant hover:border-primary-container transition-all text-xs flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                        JOIN ROOM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
