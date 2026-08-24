@@ -186,7 +186,7 @@ Bootstrap change date: **2026-08-22**.
 
 Amphitheatre publishes a single Docker image (`simstosh/amphitheatre`, API + built web app) to Docker Hub whenever a version tag is pushed. The flow is manual, not automatic on every merge:
 
-1. Move `CHANGELOG.md`'s `## [Unreleased]` content into a new `## [X.Y.Z] - YYYY-MM-DD` section (keep an empty `## [Unreleased]` above it for the next round). Add the `[X.Y.Z]` and updated `[Unreleased]` compare links at the bottom of the file.
+1. Run `scripts/extract-changelog.sh promote X.Y.Z` to move `CHANGELOG.md`'s `## [Unreleased]` content into a new `## [X.Y.Z] - YYYY-MM-DD` section (keeps an empty `## [Unreleased]` above it, and refreshes the `[X.Y.Z]` / `[Unreleased]` links at the bottom of the file).
 2. Bump `version` in the root `package.json` to match.
 3. Commit, then tag and push: `git tag vX.Y.Z && git push --tags`.
 4. `.github/workflows/release.yml` takes it from there: it extracts that version's section from `CHANGELOG.md` (`scripts/extract-changelog.sh`) to create the GitHub Release (English), and builds/pushes a multi-arch (`amd64`/`arm64`) image tagged `vX.Y.Z`, `X.Y`, and `latest`.
