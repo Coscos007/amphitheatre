@@ -9,7 +9,15 @@
 # Run:    docker run -p 3001:3001 -v amphitheatre-data:/app/data amphitheatre
 
 # ---- deps: install the full pnpm workspace (needed to build the web app) ----
-FROM node:22-alpine AS deps
+#
+# --platform=$BUILDPLATFORM pins these JS-only build stages to the runner's
+# native architecture even when cross-building for another target (e.g.
+# building linux/arm64 on an amd64 GitHub Actions runner). Node/pnpm running
+# under QEMU user-mode emulation can crash ("illegal instruction") during
+# install/build; nothing here produces architecture-specific output, so
+# there is no correctness downside. Only the final `runtime` stage below
+# stays pinned to the real $TARGETPLATFORM.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 WORKDIR /repo
 RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
