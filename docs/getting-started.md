@@ -32,10 +32,11 @@ pnpm dev
 
 `make up` starts **LiveKit + Valkey**. Voice, camera, screen share, and chat work **without** OME.
 
-- API: `http://localhost:3001` (Bun `--hot`)
+- API: `http://localhost:3001` (Bun `--hot`; operator API also on `http://127.0.0.1:3002`)
 - Web: `http://localhost:5173` (Vite proxies `/api`, including WebSocket, to `:3001`)
+- Operator UI: `pnpm dev:admin` → `http://localhost:5174` (proxies `/api` to `:3002`). Guide: [Operator admin](operator-admin.md).
 
-You can start the apps separately: `pnpm dev:api` and `pnpm dev:web`.
+You can start the apps separately: `pnpm dev:api`, `pnpm dev:web`, and `pnpm dev:admin`.
 
 ## Optional: OBS / OvenMediaEngine
 
@@ -60,7 +61,7 @@ Broadcast and OBS details: [Broadcast and OBS](broadcast.md).
 
 ```bash
 pnpm test        # bun test in apps/api
-pnpm typecheck   # @coliseum/shared + @coliseum/api + @coliseum/web
+pnpm typecheck   # @coliseum/shared + @coliseum/api + @coliseum/web + @coliseum/admin
 ```
 
 Load and stress: [load-testing.md](load-testing.md).

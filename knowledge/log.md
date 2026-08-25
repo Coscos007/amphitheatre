@@ -2,6 +2,22 @@
 
 ## 2026-08-25
 
+* **Fix**: Operator occupancy is theater presence after reconciling stale `left_at IS NULL` rows with the WebSocket hub; KPI help tooltips; factory reset of theater SQLite with a typed phrase (operators stay); operators password field no longer crashes. Rule [operator-admin-console](/rules/operator-admin-console.md). Change: [admin-occupancy-reset](/changes/2026-08-25/admin-occupancy-reset/admin-occupancy-reset.md).
+
+* **Update**: `/about` copy covers open source, self-hosting, and contribution; coffee is the primary button; OvenMediaEngine, OvenPlayer, LiveKit, and Valkey sit in a named grid. Rule [site-editorial-pages](/rules/site-editorial-pages.md).
+
+* **Creation**: Operator admin console — Vite+Mantine SPA on `ADMIN_PORT`, bootstrap operator + API key, occupancy/peak, LiveKit `/metrics` scrape and OME REST samples without a Prometheus server. Rule [operator-admin-console](/rules/operator-admin-console.md). Product: [operator-admin](/product/operator-admin/operator-admin.md). Change: [operator-admin-console](/changes/2026-08-25/operator-admin-console/operator-admin-console.md).
+
+* **Update**: Operator admin console is implemented (SPA + `/api/admin`, sampler). Earlier same-day note captured the constraints. Change: [operator-admin-console](/changes/2026-08-25/operator-admin-console/operator-admin-console.md).
+
+* **Update**: Invite links to private/password rooms open JoinGate instead of a fake 404. Join errors distinguish missing room (`not_found`) from wrong password (`invalid_password`). Home room-code field is mixed-case. Rule [join-errors-are-explicit](/rules/join-errors-are-explicit.md). Change: [join-errors-explicit](/changes/2026-08-25/join-errors-explicit/join-errors-explicit.md).
+
+* **Update**: Settings → General can request microphone and camera on tap; dock capture no longer awaits `startAudio()` first (Safari user gesture). Rule [media-permissions-need-a-user-gesture](/rules/media-permissions-need-a-user-gesture.md). Change: [media-permissions-prompt](/changes/2026-08-25/media-permissions-prompt/media-permissions-prompt.md).
+
+* **Update**: `/what-is` and `/about` are full-bleed editorial pages (large type, no glass card). What-is copy is plain language and does not name competing products. Rule [site-editorial-pages](/rules/site-editorial-pages.md). Change: [site-editorial-pages](/changes/2026-08-25/site-editorial-pages/site-editorial-pages.md).
+
+* **Creation**: Home footer nav to `/what-is` and `/about`. Change: [home-about-pages](/changes/2026-08-25/home-about-pages/home-about-pages.md).
+
 * **Creation**: Installable PWA (manifest, production SW, `#2e1b08` icon canvas), compact Home install banner, Install as app in the hamburger and General settings, locale-aware Web Share for Invite, Open Graph `summary_large_image`. Rule [pwa-and-native-share](/rules/pwa-and-native-share.md). Change: [pwa-share-meta](/changes/2026-08-25/pwa-share-meta/pwa-share-meta.md).
 
 * **Fix**: YouTube stage embed Error 153 — Hono `Referrer-Policy` is `strict-origin-when-cross-origin` (not `no-referrer`); iframe and HTML meta match; no `origin=` on the plain iframe. Rule [broadcast-opt-in](/rules/broadcast-opt-in.md). Change: [youtube-embed-referrer](/changes/2026-08-25/youtube-embed-referrer/youtube-embed-referrer.md).

@@ -18,8 +18,9 @@ Ban: the user cannot rejoin until unban. Separate from password lockout.
 
 ## Privacy of join errors
 
-- Private rooms: a failed join uses `cannot_join` (does not distinguish “does not exist” from “wrong password”).
-- Public rooms appear in `GET /api/rooms`. Wrong password on a public room: `invalid_password`.
+- `GET /api/rooms/:id` returns a preview for any existing room (no member list for non-members). Only a missing id is 404 `not_found`.
+- Wrong or missing password: `invalid_password` (public or private).
+- Public rooms appear in `GET /api/rooms`.
 
 ## Lockout and rate limits
 

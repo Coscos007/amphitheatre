@@ -48,6 +48,7 @@ export const en = {
     joinLead: "Paste a room code or a full invite link.",
     roomId: "Room code or link",
     roomIdPlaceholder: "a1b2c3",
+    roomIdHint: "Codes are case-sensitive. Type them as you received them, without changing capital letters.",
     joinPassword: "Password",
     joinPasswordHint: "Needed if the room is locked",
     joinPasswordPlaceholder: "Passkey (if locked)",
@@ -61,6 +62,36 @@ export const en = {
     moodDev: "Development",
     footer:
       "Amphitheatre is open source. This app does not record sessions.",
+  },
+  nav: {
+    label: "About this site",
+    whatIs: "What is Amphitheatre?",
+    about: "About",
+  },
+  pages: {
+    whatIsTitle: "What is Amphitheatre?",
+    whatIsKicker: "A place to be together",
+    whatIsLead: "A small theater on the web. Open a room, invite a few people, and spend the evening together.",
+    whatIsForTitle: "A night in, not a network",
+    whatIsFor: "For friends who already have a plan. No feed, no followers, no profile to build.",
+    whatIsRoomTitle: "The room is the product",
+    whatIsRoom:
+      "A short code and a display name are enough. Chat, speak, use the camera, or share a screen. The stage can show the same live video to everyone.",
+    whatIsDesignedTitle: "Built to stay small",
+    whatIsDesigned: "A handful of people, not a crowd. Whoever creates the room stays in charge. We do not record the night.",
+    whatIsLeaveTitle: "What we leave out",
+    whatIsLeave: "No catalog of shows, and no replay. You bring what you want to watch. The room is the gathering.",
+    aboutTitle: "About",
+    aboutLead:
+      "Amphitheatre is an open-source project. You can run it on your own machine, host it for your group, and help improve it.",
+    aboutContribute:
+      "The code and the self-hosting guide live on GitHub. Issues, translations, and pull requests are welcome.",
+    aboutLicenseLead: "Licensed under",
+    aboutLicenseTail: ". Created by",
+    aboutToolsTitle: "Open software that makes the rooms work",
+    aboutToolsLead:
+      "We rely on these free projects for voice, camera, screen share, and the optional live stage.",
+    goHome: "Open a room",
   },
   theater: {
     stage: "Stage",
@@ -142,12 +173,25 @@ export const en = {
     aboutTab: "About",
     adminTab: "Stage",
     generalTab: "General",
+    mediaTitle: "Microphone and camera",
+    mediaBody:
+      "Safari and many phones only show the permission prompt after a tap on these buttons. Grant access here before you use the mic or camera in the room.",
+    mediaSafari:
+      "If no prompt appears, the browser already blocked this site. Open the site settings (or iOS Settings, Safari, Camera / Microphone) and allow access, then tap the buttons again.",
+    allowMicrophone: "Allow microphone",
+    allowCamera: "Allow camera",
+    mediaGranted: "Access allowed. You can use the mic and camera in the room.",
+    mediaStateGranted: "Allowed",
+    mediaStateDenied: "Blocked in the browser",
+    mediaStatePrompt: "The browser will ask when you tap",
+    mediaStateUnknown: "Tap to request access",
     inputVolume: "Input volume",
     outputVolume: "Output volume",
     audioInput: "Microphone",
     audioOutput: "Speakers",
     videoInput: "Camera",
     previewHint: "Preview your camera and check the microphone before you share.",
+    startCameraPreview: "Start camera preview",
     testMic: "Test microphone",
     stopMicTest: "Stop microphone test",
     micMeter: "Microphone level",
@@ -189,23 +233,22 @@ export const en = {
   },
   about: {
     version: "Version {{version}}",
-    body: "Amphitheatre is an open-source theater for ephemeral rooms: text chat, voice, camera, screenshare, and an optional shared broadcast that everyone in the room can watch together.",
+    body: "Amphitheatre is a small theater for rooms that last as long as the gathering: talk, see each other, share a screen, and optionally watch the same live video together.",
     licenseLead: "The project is licensed under",
     licenseTail:
-      ". If you run a modified copy as a network service, AGPLv3 requires offering the corresponding source to the users of that service.",
+      ". You can run it, study it, and change it. If you offer a modified version to other people over the internet, you also share those changes with them.",
     creatorLead: "Created by",
     creatorName: "Lucas Sims (SIMSDEV)",
     github: "Source on GitHub",
     tools: "Made with",
     toolMeta: "v{{version}} · {{license}}",
     toolOme:
-      "Self-hosted media origin (image ovenmedialabs/ovenmediaengine). Optional RTMP ingest from OBS and WebRTC / LL-HLS playback for the room stage. Chat, voice, camera, and screenshare never require it.",
-    toolOvenPlayer:
-      "Browser player for the OvenMediaEngine stage. Prefers WebRTC; LL-HLS fallback uses hls.js 1.7.1 (Apache-2.0).",
+      "Optional live stage. A host can send a video so everyone watches the same thing. Chat, voice, and cameras work without it.",
+    toolOvenPlayer: "The player in the browser that shows that shared stage.",
     toolLiveKit:
-      "SFU for voice, camera, and screenshare (image livekit/livekit-server). The browser uses livekit-client 2.22 (Apache-2.0). Session recording is out of scope.",
+      "Carries voice, camera, and screen share between people in the room. We do not record those sessions.",
     toolValkey:
-      "RESP store used only by LiveKit (database 1, image valkey/valkey). Room state, roles, and bans live in SQLite, not here.",
+      "A small helper used only by the voice and camera layer. Who owns the room and who is in it lives somewhere else.",
     coffee: "Buy me a coffee",
   },
   indicator: {
@@ -234,10 +277,13 @@ export const en = {
     lockout: "Too many password attempts. Try again in {{time}}.",
     attemptsLeft: "{{count}} attempts left",
     invalidPassword: "That password does not match. Try again.",
+    passwordRequired: "This room needs a password. Enter it to continue.",
     full: "This room is full. Ask the owner to raise the limit or wait for a seat.",
     notFound: "We could not find that room. Check the code and try again.",
     banned: "You are banned from this room.",
-    needName: "Set a display name first.",
+    needName: "Enter a display name before you join.",
+    needNameLead: "Enter a display name so others know who you are.",
+    passwordLead: "This room is locked. Enter a display name and the password to continue.",
   },
   mod: {
     menu: "Moderation",
@@ -282,7 +328,13 @@ export const en = {
     joinFailed: "We could not enter the room. Check the code and password.",
     wsFailed: "Live updates paused. Chat may miss messages until we reconnect.",
     mediaError:
-      "Camera or microphone was blocked. Allow access in the browser and try again.",
+      "Camera or microphone could not start. Allow access in Settings, General, then try again.",
+    mediaDenied:
+      "The browser blocked the microphone or camera. Tap Allow in Settings, General, or enable them in the browser site settings.",
+    mediaNotFound: "No microphone or camera was found on this device.",
+    mediaInUse: "The microphone or camera is already in use by another app.",
+    mediaInsecure: "Microphone and camera need a secure (https) page.",
+    mediaUnsupported: "This browser cannot access the microphone or camera.",
     livekitFailed: "Voice is unavailable. Chat and the room still work.",
     selfKicked: "You were removed from the room.",
     selfBanned: "You were banned from the room.",

@@ -22,6 +22,7 @@ import {
   isRemoteAudioTrack,
   SCREEN_SHARE_CAPTURE_OPTIONS,
 } from "../lib/livekit-media.ts";
+import { classifyGetUserMediaError, mediaFailureToastKey } from "../lib/media-permissions.ts";
 import type { ParticipantMedia } from "../shared-types.ts";
 import { useRoomStore } from "../stores/room-store.ts";
 
@@ -263,9 +264,6 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
     room.on(RoomEvent.Disconnected, () => {
       if (!stopped) store.setLivekitStatus("unavailable");
     });
-    room.on(RoomEvent.MediaDevicesError, () => {
-      toast.error(i18n.t("toast.mediaError"));
-    });
     room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
       if (room.canPlaybackAudio) {
         toast.dismiss(AUDIO_BLOCKED_TOAST);
@@ -334,25 +332,33 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const setMic = async (enabledMic: boolean) => {
     const room = roomRef.current;
     if (!room) return;
-    await unlockPlayback(room);
-    await room.localParticipant.setMicrophoneEnabled(enabledMic);
-    if (enabledMic) applyInputVolume(room, readDevicePrefs().inputVolume);
-    useRoomStore.getState().setLocalMediaFlags({ micEnabled: enabledMic });
+    try {
+      // Safari/iOS drop the user-activation token if we await startAudio() first.
+      await room.localParticipant.setMicrophoneEnabled(enabledMic);
+      if (enabledMic) applyInputVolume(room, readDevicePrefs().inputVolume);
+      useRoomStore.getState().setLocalMediaFlags({ micEnabled: enabledMic });
+      void unlockPlayback(room);
+    } catch (err) {
+      toast.error(i18n.t(mediaFailureToastKey(classifyGetUserMediaError(err))));
+    }
   };
 
   const setCamera = async (enabledCam: boolean) => {
     const room = roomRef.current;
     if (!room) return;
-    await unlockPlayback(room);
-    await room.localParticipant.setCameraEnabled(enabledCam);
-    useRoomStore.getState().setLocalMediaFlags({ cameraEnabled: enabledCam });
-    refreshTiles(room);
+    try {
+      await room.localParticipant.setCameraEnabled(enabledCam);
+      useRoomStore.getState().setLocalMediaFlags({ cameraEnabled: enabledCam });
+      refreshTiles(room);
+      void unlockPlayback(room);
+    } catch (err) {
+      toast.error(i18n.t(mediaFailureToastKey(classifyGetUserMediaError(err))));
+    }
   };
 
   const setScreen = async (enabledShare: boolean) => {
     const room = roomRef.current;
     if (!room) return;
-    await unlockPlayback(room);
     try {
       if (!enabledShare) {
         await room.localParticipant.setScreenShareEnabled(false);
@@ -366,13 +372,14 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
       }
     } catch (err) {
       if (!isDisplayMediaCancelled(err)) {
-        toast.error(i18n.t("toast.mediaError"));
+        toast.error(i18n.t(mediaFailureToastKey(classifyGetUserMediaError(err))));
       }
     } finally {
       useRoomStore.getState().setLocalMediaFlags({
         screenEnabled: room.localParticipant.isScreenShareEnabled,
       });
       refreshTiles(room);
+      void unlockPlayback(room);
     }
   };
 

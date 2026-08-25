@@ -33,7 +33,7 @@ sources:
 
 SPA `@coliseum/web`: Vite 8, React 19, TanStack Router + Query, RHF+Zod, Zustand, i18next, livekit-client, OvenPlayer, hls.js, Tailwind 4, Sonner, Tabler Icons.[^web]
 
-Routes: `/` (create/join), `/rooms/$roomId` (theater). Unknown page and room 404: `NotFoundScreen` with the same InfiniteGrid3D as Home.[^router]
+Routes: `/` (create/join), `/rooms/$roomId` (theater), `/what-is`, `/about`. Unknown page and a **missing** room id: `NotFoundScreen` with the same InfiniteGrid3D as Home. An existing private/password room on `/rooms/$roomId` opens JoinGate, not 404.[^router]
 
 Vite proxy: `/api` -> `http://localhost:3001` with `ws: true`. Port **5173**. Preview 4173 with the same proxy.
 
@@ -41,9 +41,9 @@ Vite proxy: `/api` -> `http://localhost:3001` with `ws: true`. Port **5173**. Pr
 
 Theme `light` | `dark` on `data-theme` (persisted in `coliseum.ui` when the user switches). Locales `en` | `pt-BR` | `es`: first visit follows the browser; an explicit choice goes to `coliseum.locale`. Header with theme and language toggles.
 
-**Home:** visual layout follows `knowledge/references/prototypes/home.html` (64px hero, 480px dashboard). Background: `InfiniteGrid3D` (infinite 3D CSS grid, customizable). Gaming/Study/Dev cards are icon chips (~64px, tooltip, no visible text) — they do not create rooms. The HTML center pill (Discover/Library/Create) does **not** become a route; in React it loads theme and locale. Real actions: join or create a room via panel **tabs** (join first). On compact chrome the hero is centered, the hamburger opens a fullscreen appearance sheet, and the guest avatar sits inside that sheet. Compact Home also suggests installing as a PWA until the session is standalone; the hamburger has **Install as app**.
+**Home:** visual layout follows `knowledge/references/prototypes/home.html` (64px hero, 480px dashboard). Background: `InfiniteGrid3D` (infinite 3D CSS grid, customizable). Gaming/Study/Dev cards are icon chips (~64px, tooltip, no visible text) — they do not create rooms. The HTML center pill (Discover/Library/Create) does **not** become a route; in React it loads theme and locale. Real actions: join or create a room via panel **tabs** (join first). Centered footer nav: What is Amphitheatre, About. `/what-is` is a readable document (no glass card, no competing product names). `/about` is centered like the missing-room screen: open-source copy (self-host and contribute), GitHub outline + coffee primary, and a grid of OvenMediaEngine, OvenPlayer, LiveKit, and Valkey. Settings → About stays the compact modal panel. On compact chrome the hero is centered, the hamburger opens a fullscreen appearance sheet, and the guest avatar sits inside that sheet. Compact Home also suggests installing as a PWA until the session is standalone; the hamburger has **Install as app**.
 
-The stack is **not** Next.js / shadcn / DaisyUI. Do not force that stack in this repo.
+The stack is **not** Next.js / shadcn / DaisyUI. Do not force that stack in this repo. The **operator console** is a separate package `@coliseum/admin` (Mantine 9, port 5174 / `ADMIN_PORT`), not mixed into this theater SPA. See [Operator admin](/product/operator-admin/operator-admin.md).
 
 **PWA:** `manifest.webmanifest` (standalone, maskable + any icons on `#2e1b08`, `theme_color` `#1b110a`), Apple web-app meta, and a production service worker with a `fetch` passthrough so Chromium will offer install. Invite uses `navigator.share` with copy in the active locale.
 
@@ -58,6 +58,7 @@ The stack is **not** Next.js / shadcn / DaisyUI. Do not force that stack in this
 - [No emoji](/rules/no-emoji-in-ui-or-docs.md)
 - [App name is Amphitheatre](/rules/app-name-amphitheatre.md)
 - [Home follows HTML prototype](/rules/home-follows-html-prototype.md)
+- [Site editorial pages](/rules/site-editorial-pages.md)
 - [PWA and native share](/rules/pwa-and-native-share.md)
 - [Web theater SPA](/changes/2026-08-22/web-theater-spa/web-theater-spa.md)
 

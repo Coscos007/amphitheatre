@@ -20,15 +20,19 @@ Code and process rules. The agent must apply them; if the user changes a durable
 * [Pin Compose images](pin-compose-images.md) - semver tags; no latest
 * [OME WebRTC first ABR](ome-webrtc-first-abr.md) - OvenPlayer; WebRTC first; ABR on the server
 * [Home follows HTML prototype](home-follows-html-prototype.md) - Home visually faithful to home.html; mock cards/nav are not product
+* [Site editorial pages](site-editorial-pages.md) - /what-is and /about are full-bleed; What-is names no competing products
 * [Room follows HTML prototype](room-follows-html-prototype.md) - room faithful to room.html / room-chat.html
 * [Stage pin grid](stage-pin-grid.md) - auto-grid + pins
 * [Broadcast opt-in](broadcast-opt-in.md) - stream off by default; secret key
 * [App name is Amphitheatre](app-name-amphitheatre.md) - visible name Amphitheatre; @coliseum/* packages unchanged
 * [Theater header chrome](theater-header-chrome.md) - desktop dock in the header; mobile bottom bar; hamburger; mic test loopback
 * [PWA and native share](pwa-and-native-share.md) - installable PWA; icon canvas #2e1b08; locale-aware invite share
+* [Join errors are explicit](join-errors-are-explicit.md) - GET preview for existing rooms; not_found vs invalid_password
+* [Media permissions need a user gesture](media-permissions-need-a-user-gesture.md) - Allow mic/camera in General; no getUserMedia in useEffect
 * [Leave room must confirm](leave-room-must-confirm.md) - logo, Leave, and history open the Leave modal
 * [Not found infinite grid](not-found-infinite-grid.md) - 404 and missing room use the Home background
 * [Chat flood soft-ban](chat-flood-soft-ban.md) - 1024 chars; 1–2 min pause on flood
 * [AGPLv3 and CLA](agplv3-and-cla.md) - public edition AGPL-3.0-only; ICLA + CLA Assistant for SIMSDEV relicensing
 * [Public docs in English](public-docs-english.md) - README, CONTRIBUTING, CLA, AGENTS, LICENSE, docs/, infra/README.md, and knowledge/ are English
 * [CHANGELOG and release process](changelog-and-release-process.md) - Unreleased bullet per change; manual git tag triggers GitHub Release + Docker Hub
+* [Operator admin console](operator-admin-console.md) - separate bind/port; admin session; scrape LiveKit /metrics + OME REST; no Prometheus server

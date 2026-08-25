@@ -14,6 +14,7 @@ import {
   joinRoom,
   leaveRoom,
 } from "../../lib/api.ts";
+import { joinErrorMessageKey } from "../../lib/join-errors.ts";
 import { NotFoundScreen } from "../not-found-screen.tsx";
 import { LeaveRoomDialog } from "./leave-room-dialog.tsx";
 import { emptyBroadcast } from "@coliseum/shared";
@@ -150,13 +151,16 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
           if (isLockoutError(error)) {
             setLockout(Date.now() + (error.remainingMs ?? 300000));
           }
+          if (error instanceof ApiError) {
+            setGateError(t(joinErrorMessageKey(error)));
+          }
           setGate(true);
         }
       })();
       return;
     }
     setGate(true);
-  }, [applyJoin, roomQuery.isFetched, roomQuery.data, roomId, setLockout]);
+  }, [applyJoin, roomQuery.isFetched, roomQuery.data, roomQuery.isError, roomId, setLockout, t]);
 
   useQuery({
     queryKey: ["media", roomId],
@@ -197,18 +201,8 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
         return;
       }
       if (error instanceof ApiError) {
-        if (error.code === "invalid_password" || error.code === "cannot_join" || error.status === 401) {
-          setGateError(t("join.invalidPassword"));
-          return;
-        }
-        if (error.code === "room_full" || error.status === 409) {
-          setGateError(t("join.full"));
-          return;
-        }
-        if (error.code === "banned") {
-          setGateError(t("join.banned"));
-          return;
-        }
+        setGateError(t(joinErrorMessageKey(error)));
+        return;
       }
       setGateError(t("toast.joinFailed"));
     }
@@ -257,11 +251,12 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
   if (isNotFoundError(roomQuery.error)) return <NotFoundScreen kind="room" />;
   if (loading) return <div className="min-h-dvh bg-surface-page" />;
 
+  const preview = roomQuery.data ?? room;
   if (gate || !joined || !room) {
     return (
       <JoinGate
-        roomName={room?.name}
-        hasPassword={room?.hasPassword ?? true}
+        roomName={preview?.name}
+        hasPassword={Boolean(preview?.hasPassword)}
         lockoutUntil={lockoutUntil}
         error={gateError}
         onJoin={onGateJoin}

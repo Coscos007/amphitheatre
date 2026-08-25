@@ -10,7 +10,7 @@ describe("password lockout", () => {
 
     const first = await joinRoom(app, guest.token, room.id, "errada", "198.51.100.20");
     expect(first.status).toBe(403);
-    expect(first.body.error).toBe("cannot_join");
+    expect(first.body.error).toBe("invalid_password");
 
     const second = await joinRoom(app, guest.token, room.id, "errada", "198.51.100.20");
     expect(second.status).toBe(403);
@@ -31,11 +31,11 @@ describe("password lockout", () => {
     expect(after.body.role).toBe("member");
   });
 
-  test("sala privada nao distingue inexistente de senha errada", async () => {
+  test("sala inexistente nao conta como falha de senha", async () => {
     const { app } = makeApp();
     const guest = await createGuest(app, "Visitante");
     const missing = await joinRoom(app, guest.token, "NoSuch01", "x");
-    expect(missing.status).toBe(403);
-    expect(missing.body.error).toBe("cannot_join");
+    expect(missing.status).toBe(404);
+    expect(missing.body.error).toBe("not_found");
   });
 });

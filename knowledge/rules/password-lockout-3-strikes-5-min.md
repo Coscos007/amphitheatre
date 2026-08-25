@@ -29,9 +29,9 @@ Keys persisted in SQLite (`lockouts`):
 - `ip:{ip}:{roomId}`
 - `user:{userId}:{roomId}` if a session exists
 
-After 3 failures, join returns error `locked_out` with `retryAfterMs` (and `Retry-After` header in seconds). The 4th attempt is **not** `401`/`cannot_join` — it is lockout, even with the right password, until it expires.[^lockout][^test]
+After 3 failures, join returns error `locked_out` with `retryAfterMs` (and `Retry-After` header in seconds). The 4th attempt is **not** `401`/`invalid_password` — it is lockout, even with the right password, until it expires.[^lockout][^test]
 
-A missing room also counts as a failure (avoids enumeration + brute force). Private rooms: `cannot_join` body on a failed join **before** lockout; do not leak whether the room exists.
+A **missing** room is `not_found` and does **not** count as a password failure. Wrong password on an existing room (public or private) is `invalid_password` and does count. An empty password on a locked room is `invalid_password` without a lockout strike. See [join-errors-are-explicit](/rules/join-errors-are-explicit.md).
 
 Lockout is **not** a member ban. Ban is the `bans` table and only leaves with an admin unban.
 

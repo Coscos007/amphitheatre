@@ -3,6 +3,8 @@ import {
   RoomServiceClient,
   TrackSource,
   WebhookReceiver,
+  type ParticipantInfo,
+  type Room,
   type VideoGrant,
   type WebhookEvent,
 } from "livekit-server-sdk";
@@ -24,6 +26,8 @@ export type LivekitService = {
   applyMute: (roomId: string, userId: string, muted: boolean) => Promise<void>;
   removeParticipant: (roomId: string, userId: string) => Promise<void>;
   receiveWebhook: (body: string, authHeader: string | undefined) => Promise<WebhookEvent | null>;
+  listRooms: () => Promise<Room[]>;
+  listParticipants: (roomId: string) => Promise<ParticipantInfo[]>;
 };
 
 function grantFor(roomId: string, muted: boolean): VideoGrant {
@@ -112,6 +116,28 @@ export function createLivekitService(env: Env, fetchImpl: typeof fetch = fetch):
           reason: err instanceof Error ? err.name : "error",
         });
         return null;
+      }
+    },
+    async listRooms() {
+      if (!roomService) return [];
+      try {
+        return await roomService.listRooms();
+      } catch (err) {
+        logger.warn("livekit_list_rooms_failed", {
+          reason: err instanceof Error ? err.name : "error",
+        });
+        return [];
+      }
+    },
+    async listParticipants(roomId) {
+      if (!roomService) return [];
+      try {
+        return await roomService.listParticipants(roomId);
+      } catch (err) {
+        logger.warn("livekit_list_participants_failed", {
+          reason: err instanceof Error ? err.name : "error",
+        });
+        return [];
       }
     },
   };

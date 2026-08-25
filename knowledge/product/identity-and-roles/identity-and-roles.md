@@ -24,6 +24,8 @@ sources:
 
 `POST /api/session` `{ displayName }` (1–32 chars). If a valid cookie already exists, it **reuses** `userId` and only updates the name.
 
+Invite links: `GET /api/rooms/:id` returns a preview for existing rooms (including private). The join screen asks for a display name (and password when `hasPassword`). See [join-errors-are-explicit](/rules/join-errors-are-explicit.md).
+
 Response: `{ userId, displayName, token }`. httpOnly cookie `ct_session` + Bearer for Vite. HMAC: `SESSION_SECRET`.
 
 There is no signup, email, OAuth, or complex refresh token. `userId` is a UUID.

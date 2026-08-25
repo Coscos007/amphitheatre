@@ -1,6 +1,8 @@
 # HTTP / WebSocket API
 
-This is the frozen contract. Types and paths: `packages/shared`. Do not change paths or payloads without updating `packages/shared`, this file, `apps/api`, `apps/web`, and [api-contract-frozen](../knowledge/rules/api-contract-frozen.md) in the same change.
+This is the frozen **guest** contract. Types and paths: `packages/shared`. Do not change paths or payloads without updating `packages/shared`, this file, `apps/api`, `apps/web`, and [api-contract-frozen](../knowledge/rules/api-contract-frozen.md) in the same change.
+
+The operator namespace `/api/admin/*` is separate (cookie `ct_admin`, port `ADMIN_PORT`). It does not change any row below. See [Operator admin](operator-admin.md).
 
 Base `/api`, JSON. Cookie `ct_session` + Bearer `token`.
 
@@ -34,8 +36,9 @@ From the client: `chat.send`, `presence.update`.
 
 ## Errors and media
 
-- Failed private join: `cannot_join` (does not distinguish “missing room” from “wrong password”).
-- Wrong password on a public room: `invalid_password`.
+- Missing room on GET or join: `not_found` (404).
+- Wrong or missing password (public or private): `invalid_password`.
+- `cannot_join` remains in the error-code enum but is not used for missing rooms or wrong passwords.
 - Lockout: `locked_out` + `retryAfterMs`.
 - Room full: `room_full` (409).
 - Rate limit: `429` + `retryAfterMs`.

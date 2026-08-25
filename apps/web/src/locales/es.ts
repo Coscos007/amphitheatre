@@ -50,6 +50,7 @@ export const es: Messages = {
     joinLead: "Pega un código o el enlace completo de la invitación.",
     roomId: "Código o enlace de la sala",
     roomIdPlaceholder: "a1b2c3",
+    roomIdHint: "El código distingue mayúsculas de minúsculas. Escríbelo tal como lo recibiste.",
     joinPassword: "Contraseña",
     joinPasswordHint: "Hace falta si la sala está cerrada",
     joinPasswordPlaceholder: "Clave (si está cerrada)",
@@ -63,6 +64,36 @@ export const es: Messages = {
     moodDev: "Desarrollo",
     footer:
       "Amphitheatre es de código abierto. Esta app no graba sesiones.",
+  },
+  nav: {
+    label: "Sobre este sitio",
+    whatIs: "¿Qué es Amphitheatre?",
+    about: "Acerca de",
+  },
+  pages: {
+    whatIsTitle: "¿Qué es Amphitheatre?",
+    whatIsKicker: "Un lugar para estar juntos",
+    whatIsLead: "Un teatro pequeño en la web. Abre una sala, invita a unas cuantas personas y pasen la noche juntos.",
+    whatIsForTitle: "Un encuentro, no una red",
+    whatIsFor: "Para quien ya tiene un plan. Sin feed, sin seguidores, sin perfil que construir.",
+    whatIsRoomTitle: "La sala es el producto",
+    whatIsRoom:
+      "Un código corto y un nombre bastan. Escriban, hablen, enciendan la cámara o compartan la pantalla. El escenario puede mostrar el mismo vídeo en vivo a todo el mundo.",
+    whatIsDesignedTitle: "Hecho para seguir siendo pequeño",
+    whatIsDesigned: "Cabe un grupo, no una platea. Quien crea la sala sigue al mando. No grabamos la noche.",
+    whatIsLeaveTitle: "Lo que queda fuera",
+    whatIsLeave: "Sin catálogo de programas y sin repetición. Ustedes traen lo que quieran ver. La sala es el encuentro.",
+    aboutTitle: "Acerca de",
+    aboutLead:
+      "Amphitheatre es un proyecto de código abierto. Puedes ejecutarlo en tu máquina, hospedarlo para tu grupo y ayudar a mejorar el código.",
+    aboutContribute:
+      "El código y la guía de autoalojamiento están en GitHub. Issues, traducciones y pull requests son bienvenidos.",
+    aboutLicenseLead: "Bajo la licencia",
+    aboutLicenseTail: ". Creado por",
+    aboutToolsTitle: "Software libre que hace funcionar las salas",
+    aboutToolsLead:
+      "Usamos estos proyectos abiertos para voz, cámara, compartir pantalla y el escenario en vivo opcional.",
+    goHome: "Abrir una sala",
   },
   theater: {
     stage: "Escenario",
@@ -144,12 +175,25 @@ export const es: Messages = {
     aboutTab: "Acerca de",
     adminTab: "Escenario",
     generalTab: "General",
+    mediaTitle: "Micrófono y cámara",
+    mediaBody:
+      "Safari y muchos teléfonos solo muestran el permiso después de un toque en estos botones. Autoriza aquí antes de usar el mic o la cámara en la sala.",
+    mediaSafari:
+      "Si no aparece el aviso, el navegador ya bloqueó este sitio. Abre los ajustes del sitio (o Ajustes de iOS, Safari, Cámara / Micrófono), permite el acceso y vuelve a tocar los botones.",
+    allowMicrophone: "Permitir micrófono",
+    allowCamera: "Permitir cámara",
+    mediaGranted: "Acceso permitido. Ya puedes usar el mic y la cámara en la sala.",
+    mediaStateGranted: "Permitido",
+    mediaStateDenied: "Bloqueado en el navegador",
+    mediaStatePrompt: "El navegador pregunta cuando tocas",
+    mediaStateUnknown: "Toca para pedir acceso",
     inputVolume: "Volumen de entrada",
     outputVolume: "Volumen de salida",
     audioInput: "Micrófono",
     audioOutput: "Altavoces",
     videoInput: "Cámara",
     previewHint: "Previsualiza la cámara y prueba el micrófono antes de compartir.",
+    startCameraPreview: "Iniciar vista previa de la cámara",
     testMic: "Probar micrófono",
     stopMicTest: "Detener prueba del micrófono",
     micMeter: "Nivel del micrófono",
@@ -191,23 +235,22 @@ export const es: Messages = {
   },
   about: {
     version: "Versión {{version}}",
-    body: "Amphitheatre es un teatro de código abierto para salas efímeras: chat de texto, voz, cámara, compartir pantalla y un escenario opcional de broadcast que toda la sala ve junta.",
+    body: "Amphitheatre es un teatro pequeño para salas que duran el encuentro: hablar, verse, compartir pantalla y, si quieren, ver el mismo vídeo en vivo juntos.",
     licenseLead: "El proyecto está licenciado bajo",
     licenseTail:
-      ". Si ejecutas una copia modificada como servicio de red, AGPLv3 exige ofrecer el código fuente correspondiente a quienes usan ese servicio.",
+      ". Puedes ejecutarlo, estudiarlo y cambiarlo. Si ofreces una versión modificada a otras personas por internet, también compartes esos cambios con ellas.",
     creatorLead: "Creado por",
     creatorName: "Lucas Sims (SIMSDEV)",
     github: "Código en GitHub",
     tools: "Hecho con",
     toolMeta: "v{{version}} · {{license}}",
     toolOme:
-      "Origen de medios self-hosted (imagen ovenmedialabs/ovenmediaengine). Ingest RTMP opcional desde OBS y playback WebRTC / LL-HLS en el escenario. Chat, voz, cámara y pantalla nunca lo requieren.",
-    toolOvenPlayer:
-      "Reproductor en el navegador para el escenario OvenMediaEngine. Prefiere WebRTC; el fallback LL-HLS usa hls.js 1.7.1 (Apache-2.0).",
+      "Escenario en vivo opcional. Quien organiza puede enviar un vídeo para que todo el mundo mire junto. El chat, la voz y la cámara funcionan sin eso.",
+    toolOvenPlayer: "El reproductor en el navegador que muestra ese escenario compartido.",
     toolLiveKit:
-      "SFU de voz, cámara y pantalla (imagen livekit/livekit-server). El navegador usa livekit-client 2.22 (Apache-2.0). La grabación de sesión está fuera de alcance.",
+      "Lleva voz, cámara y pantalla entre las personas de la sala. No grabamos esas sesiones.",
     toolValkey:
-      "Almacén RESP usado solo por LiveKit (database 1, imagen valkey/valkey). El estado de la sala, roles y baneos viven en SQLite, no aquí.",
+      "Un auxiliar usado solo por la capa de voz y cámara. Quién es dueño de la sala y quién está en ella vive en otro sitio.",
     coffee: "Invítame un café",
   },
   indicator: {
@@ -236,10 +279,13 @@ export const es: Messages = {
     lockout: "Demasiados intentos de contraseña. Inténtalo de nuevo en {{time}}.",
     attemptsLeft: "{{count}} intentos restantes",
     invalidPassword: "Esa contraseña no coincide. Inténtalo de nuevo.",
+    passwordRequired: "Esta sala necesita una contraseña. Introdúcela para continuar.",
     full: "Esta sala está llena. Pide al dueño subir el límite o espera un asiento.",
     notFound: "No encontramos esa sala. Revisa el código e inténtalo de nuevo.",
     banned: "Estás bloqueado en esta sala.",
-    needName: "Define un nombre visible primero.",
+    needName: "Introduce un nombre visible antes de entrar.",
+    needNameLead: "Introduce un nombre visible para que las demás personas sepan quién eres.",
+    passwordLead: "Esta sala está cerrada. Introduce un nombre visible y la contraseña para continuar.",
   },
   mod: {
     menu: "Moderación",
@@ -284,7 +330,13 @@ export const es: Messages = {
     joinFailed: "No pudimos entrar a la sala. Revisa el código y la contraseña.",
     wsFailed: "Las actualizaciones en vivo se pausaron. El chat puede perder mensajes hasta reconectar.",
     mediaError:
-      "La cámara o el micrófono fueron bloqueados. Permite el acceso en el navegador e inténtalo de nuevo.",
+      "No se pudo encender la cámara o el micrófono. Permite el acceso en Ajustes, General, e inténtalo de nuevo.",
+    mediaDenied:
+      "El navegador bloqueó el micrófono o la cámara. Toca Permitir en Ajustes, General, o actívalos en los ajustes del sitio.",
+    mediaNotFound: "No se encontró un micrófono o una cámara en este dispositivo.",
+    mediaInUse: "El micrófono o la cámara ya está en uso por otra app.",
+    mediaInsecure: "El micrófono y la cámara necesitan una página segura (https).",
+    mediaUnsupported: "Este navegador no puede acceder al micrófono o a la cámara.",
     livekitFailed: "La voz no está disponible. El chat y la sala siguen funcionando.",
     selfKicked: "Te quitaron de la sala.",
     selfBanned: "Te bloquearon en la sala.",

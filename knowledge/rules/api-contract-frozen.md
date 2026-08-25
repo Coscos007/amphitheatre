@@ -18,6 +18,9 @@ sources:
   - id: k6
     resource: infra/loadtest/k6/api-rooms.js
     title: k6 still outdated vs /api
+  - id: admin
+    resource: docs/operator-admin.md
+    title: Operator /api/admin namespace
 ---
 
 # Schema
@@ -48,7 +51,7 @@ Base `/api`, JSON. Cookie `ct_session` + Bearer `token`. WS: `GET /api/rooms/:id
 
 Create body: `{ name, password?, memberLimit?, isPublic? }` — **not** `maxUsers` / media toggles in the current JSON.
 
-Failed private join: `cannot_join`. Lockout: `locked_out` + `retryAfterMs`. Room full: `room_full` (409).
+Failed join of a missing room: `not_found` (404). Wrong or missing password: `invalid_password` (public or private). Lockout: `locked_out` + `retryAfterMs`. Room full: `room_full` (409). The code `cannot_join` remains in `errorCodes` but is not emitted for missing rooms or wrong passwords.
 
 Events to the client: `chat`, `presence`, `speaking`, `transmitting`, `quality`, `ome`, `broadcast`, `moderation`, `system`. From the client: `chat.send`, `presence.update`.
 
@@ -73,7 +76,9 @@ Any change to a path, field, or event requires, in the **same** change:
 
 There is no `POST /webhooks/ome/admission` in the routes. Do not document it as implemented.
 
-Vite proxies only `/api` (including WS). LiveKit webhooks hit `:3001` directly (`host.docker.internal`).
+`/api/admin/*` is a **new** namespace on `ADMIN_PORT` (cookie `ct_admin`). Do not change guest paths when adding operator routes. Document admin in [docs/operator-admin.md](../../docs/operator-admin.md) and `packages/shared` (`adminPaths`). Guest `docs/api.md` stays the theater contract.
+
+Vite theater proxies only `/api` (including WS) to `:3001`. Operator Vite proxies `/api` to `:3002`. LiveKit webhooks hit `:3001` directly (`host.docker.internal`).
 
 # Related
 

@@ -37,15 +37,19 @@ services:
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
       LIVEKIT_HTTP_URL: http://livekit:7880
+      LIVEKIT_METRICS_URL: http://livekit:6789/metrics
       OME_API_URL: http://ome:8081
       OME_API_ACCESS_TOKEN: ${OME_API_ACCESS_TOKEN}
       TRUST_PROXY: "true"
       COOKIE_SECURE: "true"
       DATABASE_PATH: /app/data/amphitheatre.sqlite
+      ADMIN_BIND: "0.0.0.0"
+      ADMIN_PORT: "3002"
     volumes:
       - app-data:/app/data
     ports:
       - "3001:3001"
+      - "127.0.0.1:3002:3002"
     networks: [amphitheatre]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health >/dev/null 2>&1 || exit 1"]

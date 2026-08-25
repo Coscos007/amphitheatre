@@ -92,7 +92,7 @@ Log in a spreadsheet (timestamp, git SHA, `docker compose images`):
 **Hono API**
 
 - `http_req_duration` p50/p95/p99 (k6)
-- Rate of `429` (rate limit) vs `locked_out` / `invalid_password` / `cannot_join` vs `401`
+- Rate of `429` (rate limit) vs `locked_out` / `invalid_password` / `not_found` vs `401`
 - 5xx errors (= abort)
 
 **Client**
@@ -169,7 +169,7 @@ k6 run -e API_BASE=http://localhost:3001 infra/loadtest/k6/api-rooms.js
 - Room full: `room_full` **409** — must **not** enter LiveKit
 - Parallel join (spike): 40 clients on the same `roomId` with `memberLimit=20` — exactly 20 `2xx`, the rest rejected
 
-Private failed join: `cannot_join` (does not distinguish missing room vs wrong password). Public wrong password: `invalid_password`.
+Missing room: `not_found` (does not lock out). Wrong password: `invalid_password` (public or private).
 
 ### 6.3 Password brute-force (required)
 
@@ -178,7 +178,7 @@ Product rule: **3 failures → 5 min lockout** (IP and/or `userId`).
 Procedure:
 
 1. Create a room with a known password.
-2. From the same IP, 3× `POST /api/rooms/:id/join` with the wrong password → `invalid_password` / `cannot_join`.
+2. From the same IP, 3× `POST /api/rooms/:id/join` with the wrong password → `invalid_password`.
 3. 4th attempt (right or wrong) → `locked_out` with `retryAfterMs` ≈ 300000.
 4. From **another** IP, the correct password still joins (lockout is not global).
 5. After 5 min, the locked IP can try again.

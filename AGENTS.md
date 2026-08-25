@@ -17,19 +17,20 @@ Session recording is **out of scope**. Sophisticated reconnection is the **last 
 ## Monorepo map
 
 ```
-apps/api          Bun + Hono — REST, WebSocket, JWT, SQLite, LiveKit mint, OME poll
+apps/api          Bun + Hono — REST, WebSocket, JWT, SQLite, LiveKit mint, OME poll, operator admin
 apps/web          Vite + React SPA — desktop theater + its own mobile layout
+apps/admin        Vite + React SPA — operator console (Mantine 9, separate port)
 packages/shared   TS contract: types, roles, paths, events, errors, limits
 infra/            Docker Compose for LOCAL DEV (LiveKit, Valkey, OME, Caddy), scripts, k6
 deploy/           Self-contained Compose stack for SELF-HOSTING pre-built images (no repo clone needed)
-Dockerfile        Single production image: API + built web app, one port
-docs/             Getting started, self-hosting, configuration, API, identity, broadcast, license, load testing
+Dockerfile        Production image: API + theater SPA + operator SPA (ports 3001 and 3002)
+docs/             Getting started, self-hosting, configuration, API, identity, broadcast, operator admin, license, load testing
 knowledge/        OKF v0.2 catalog (product, rules, changes) + references/
 CHANGELOG.md      Macro history (Keep a Changelog), English, updated with every feature/fix
 AGENTS.md         This file
 ```
 
-pnpm workspace: `pnpm-workspace.yaml` (`apps/*`, `packages/*`). Packages: `@coliseum/api`, `@coliseum/web`, `@coliseum/shared`.
+pnpm workspace: `pnpm-workspace.yaml` (`apps/*`, `packages/*`). Packages: `@coliseum/api`, `@coliseum/web`, `@coliseum/admin`, `@coliseum/shared`.
 
 Room, member, role, ban, and lockout state: **SQLite** (`DATABASE_PATH`). Valkey in Compose is **only** for LiveKit (DB 1, hostname `redis`). The API **does not** need it to persist owner/admin.
 
@@ -55,14 +56,16 @@ make ome-up
 OME only when there is OBS ingest / an ffmpeg fixture.
 
 ```bash
-pnpm dev:api    # API on :3001 (Bun --hot)
+pnpm dev:api    # API on :3001 (theater) and :3002 (operator, ADMIN_BIND=127.0.0.1)
 pnpm dev:web    # Vite on :5173 (proxy /api -> :3001, including WS)
-pnpm dev        # both in parallel
+pnpm dev:admin  # Vite on :5174 (proxy /api -> :3002)
+pnpm dev        # theater + API in parallel; operator UI is `pnpm dev:admin`
 ```
 
 Checks:
 
 - `GET http://localhost:3001/health` -> `{ "ok": true }`
+- Operator console (dev): `pnpm dev:admin` -> `http://localhost:5174`
 - `make smoke` — infra health; missing OME is not a LiveKit failure
 - SPA: `http://localhost:5173`
 
@@ -129,7 +132,7 @@ See [docs/identity.md](docs/identity.md).
   - admin: kick, mute, ban/unban, grant/revoke `admin` and `moderator` (never touches owner)
   - owner: all of that; does not lose the role
 - Ban: cannot rejoin until unban. Separate from password lockout.
-- Private rooms: failed join uses `cannot_join` (does not distinguish “does not exist” from “wrong password”). Public rooms appear in `GET /api/rooms`. Public room, wrong password: `invalid_password`.
+- Private rooms: `GET /api/rooms/:id` still returns a preview (`hasPassword`) so invite links can open the join screen. Failed join of a missing room: `not_found`. Wrong password: `invalid_password`. Public rooms appear in `GET /api/rooms`.
 
 Details: [identity-and-roles](knowledge/product/identity-and-roles/identity-and-roles.md), [moderation](knowledge/product/moderation/moderation.md), [owner-admin-is-persistent](knowledge/rules/owner-admin-is-persistent.md).
 
@@ -203,8 +206,8 @@ Do not tag or release without the user's explicit request — see "Git and PRs" 
 ## Tests
 
 ```bash
-pnpm test         # bun test in apps/api (lockout, roles, owner-persistence, ome)
-pnpm typecheck    # @coliseum/shared + @coliseum/api + @coliseum/web
+pnpm test         # bun test in apps/api (lockout, roles, owner-persistence, ome, admin)
+pnpm typecheck    # @coliseum/shared + @coliseum/api + @coliseum/web + @coliseum/admin
 ```
 
 Load and stress: [docs/load-testing.md](docs/load-testing.md). The k6 script in `infra/loadtest/k6/api-rooms.js` still uses old paths (`POST /rooms`); the real contract is `/api/...` in `packages/shared` and [docs/api.md](docs/api.md). When touching load tests, align the script to the frozen contract — not the other way around.

@@ -18,14 +18,45 @@ export { STREAM_PROVIDERS, broadcastIframeSrc, emptyBroadcast, isStreamProvider,
 export type { BroadcastUpdate, RoomBroadcast, StreamProvider } from "./broadcast";
 
 export {
+  ADMIN_COOKIE,
+  ADMIN_TIME_RANGES,
   API_BASE,
   CHAT_FLOOD_BAN_SECONDS,
+  DEFAULT_ADMIN_TIME_RANGE,
   SESSION_COOKIE,
+  adminPaths,
+  adminTimeRangeMs,
   apiPaths,
+  isAdminTimeRange,
   limits,
+  normalizeAdminTimeRange,
   normalizeChatFloodBanSec,
 } from "./paths";
-export type { ChatFloodBanSec } from "./paths";
+export type { AdminTimeRange, ChatFloodBanSec } from "./paths";
+
+export {
+  ADMIN_FACTORY_RESET_PHRASES,
+  isAdminFactoryResetPhrase,
+} from "./admin";
+export type {
+  AdminApiKeyRotateResponse,
+  AdminFactoryResetResponse,
+  AdminLabeledSeries,
+  AdminLivekitNodeMetrics,
+  AdminLoginResponse,
+  AdminOmeStreamMetrics,
+  AdminOverview,
+  AdminRoomLivekitSnapshot,
+  AdminRoomMember,
+  AdminRoomMetrics,
+  AdminRoomOmeSnapshot,
+  AdminRoomRow,
+  AdminSeriesPoint,
+  AdminSeriesUnit,
+  AdminSession,
+  AdminTrackBreakdown,
+  AdminUser,
+} from "./admin";
 
 export type { ApiErrorBody, ErrorCode } from "./errors";
 export { errorCodes } from "./errors";

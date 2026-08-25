@@ -17,15 +17,45 @@ export function remainingLockMs(
   ip: string,
   userId?: string,
 ): number {
+  return remainingForKeys(db, clock, lockoutKeys(roomId, ip, userId));
+}
+
+function remainingForKeys(db: Database, clock: Clock, keys: string[]): number {
   const now = clock.now();
   let remaining = 0;
-  for (const key of lockoutKeys(roomId, ip, userId)) {
+  for (const key of keys) {
     const row = getLockout(db, key);
     if (!row?.locked_until) continue;
     if (row.locked_until <= now) continue;
     remaining = Math.max(remaining, row.locked_until - now);
   }
   return remaining;
+}
+
+export function adminLockoutKeys(ip: string, username?: string): string[] {
+  const keys = [`admin:ip:${ip}`];
+  if (username) keys.push(`admin:user:${username.toLowerCase()}`);
+  return keys;
+}
+
+export function remainingAdminLockMs(db: Database, clock: Clock, ip: string, username?: string): number {
+  return remainingForKeys(db, clock, adminLockoutKeys(ip, username));
+}
+
+export function recordAdminFailure(
+  db: Database,
+  env: Env,
+  clock: Clock,
+  ip: string,
+  username?: string,
+): number {
+  return recordFailures(db, env, clock, adminLockoutKeys(ip, username));
+}
+
+export function clearAdminLockouts(db: Database, ip: string, username?: string): void {
+  for (const key of adminLockoutKeys(ip, username)) {
+    deleteLockout(db, key);
+  }
 }
 
 export function recordPasswordFailure(
@@ -36,9 +66,13 @@ export function recordPasswordFailure(
   ip: string,
   userId?: string,
 ): number {
+  return recordFailures(db, env, clock, lockoutKeys(roomId, ip, userId));
+}
+
+function recordFailures(db: Database, env: Env, clock: Clock, keys: string[]): number {
   const now = clock.now();
   let remaining = 0;
-  for (const key of lockoutKeys(roomId, ip, userId)) {
+  for (const key of keys) {
     const existing = getLockout(db, key);
     let failCount = existing?.fail_count ?? 0;
     if (existing?.locked_until && existing.locked_until <= now) {

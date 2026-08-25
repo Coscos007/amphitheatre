@@ -12,3 +12,4 @@ Product concepts (macro). Detail of what landed in code: [changes](../changes/).
 * [Safety limits](safety-limits/safety-limits.md) - rate limit, lockout, caps
 * [Clients](clients/clients.md) - SPA, separate mobile layout, i18n, theme
 * [Out of scope](out-of-scope/out-of-scope.md) - recording and legal limits
+* [Operator admin](operator-admin/operator-admin.md) - host monitoring console (separate port)

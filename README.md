@@ -59,7 +59,7 @@ That downloads ready-made images from [Docker Hub](https://hub.docker.com/r/sims
 Just kicking the tires on your own computer? A single command gets the app itself running (though voice/video needs the LiveKit piece too — see the guide):
 
 ```bash
-docker run -p 3001:3001 -e SESSION_SECRET=change-me simstosh/amphitheatre:latest
+docker run -p 3001:3001 -p 127.0.0.1:3002:3002 -e SESSION_SECRET=change-me -e ADMIN_BIND=0.0.0.0 simstosh/amphitheatre:latest
 ```
 
 ### "I want to change the code / contribute"
@@ -81,7 +81,8 @@ pnpm dev     # starts the app itself
 | [Self-hosting](docs/self-hosting.md) | Run your own copy: domains, `deploy/`, Caddy or Traefik, ports, updates |
 | [Getting started](docs/getting-started.md) | Developer setup, `make up` / `make ome-up`, smoke checks |
 | [Configuration](docs/configuration.md) | Every environment variable, explained |
-| [HTTP / WebSocket API](docs/api.md) | Frozen contract |
+| [HTTP / WebSocket API](docs/api.md) | Frozen guest contract |
+| [Operator admin](docs/operator-admin.md) | Host console on port 3002: rooms, LiveKit/OME metrics |
 | [Identity and moderation](docs/identity.md) | Guests, roles, bans, lockout |
 | [Broadcast and OBS](docs/broadcast.md) | Opt-in stage, stream key, OvenPlayer |
 | [Architecture](docs/architecture.md) | Monorepo, stores, OME independence |

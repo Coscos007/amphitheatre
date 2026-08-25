@@ -13,6 +13,7 @@ type JwtPayload = {
   displayName: string;
   exp: number;
   iat: number;
+  aud?: unknown;
 };
 
 export async function issueSession(
@@ -37,6 +38,9 @@ export async function decodeSession(env: Env, token: string): Promise<SessionUse
   try {
     const payload = (await verify(token, env.SESSION_SECRET, ALG)) as JwtPayload;
     if (!payload.sub || typeof payload.displayName !== "string") {
+      throw unauthorized();
+    }
+    if (payload.aud === "admin") {
       throw unauthorized();
     }
     return { userId: payload.sub, displayName: payload.displayName };

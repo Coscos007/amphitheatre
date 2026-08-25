@@ -32,6 +32,14 @@ export function cannotJoin(message = "Nao foi possivel entrar na sala"): HttpErr
   return new HttpError(403, "cannot_join", message);
 }
 
+export function invalidPassword(message = "Senha invalida"): HttpError {
+  return new HttpError(403, "invalid_password", message);
+}
+
+export function invalidCredentials(message = "Credenciais invalidas"): HttpError {
+  return new HttpError(401, "invalid_credentials", message);
+}
+
 export function lockedOut(retryAfterMs: number): HttpError {
   return new HttpError(
     429,

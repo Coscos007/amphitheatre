@@ -103,6 +103,21 @@ export class RoomHub {
     return (this.rooms.get(roomId)?.get(userId)?.size ?? 0) > 0;
   }
 
+  hasPendingLeave(roomId: string, userId: string): boolean {
+    return this.leaveTimers.has(`${roomId}:${userId}`);
+  }
+
+  resetSessionState(): void {
+    for (const timer of this.leaveTimers.values()) clearTimeout(timer);
+    this.leaveTimers.clear();
+    this.rooms.clear();
+    this.chat.clear();
+    this.live.clear();
+    this.omeSnapshots.clear();
+    this.chatTimes.clear();
+    this.chatMuteUntil.clear();
+  }
+
   disconnectUser(roomId: string, userId: string, code: string, message: string): void {
     this.cancelLeave(roomId, userId);
     const conns = this.rooms.get(roomId)?.get(userId);

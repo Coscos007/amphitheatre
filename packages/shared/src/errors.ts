@@ -5,6 +5,7 @@ export const errorCodes = [
   "not_found",
   "cannot_join",
   "invalid_password",
+  "invalid_credentials",
   "banned",
   "locked_out",
   "room_full",

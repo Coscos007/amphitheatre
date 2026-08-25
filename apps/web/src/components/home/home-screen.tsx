@@ -8,11 +8,13 @@ import { toast } from "sonner";
 import {
   createRoom,
   createSession,
+  getRoom,
   joinRoom,
   parseRoomCode,
   ApiError,
   isLockoutError,
 } from "../../lib/api.ts";
+import { joinErrorMessageKey, isMissingRoomError } from "../../lib/join-errors.ts";
 import {
   createRoomSchema,
   joinRoomSchema,
@@ -32,6 +34,7 @@ import { HomeMoodRail } from "./home-mood-rail.tsx";
 import { HomeActionTabs, HomePanel } from "./home-panel.tsx";
 import { InfiniteGrid3D } from "./infinite-grid-3d.tsx";
 import { PwaInstallBanner } from "../chrome/pwa-install.tsx";
+import { SiteFooter } from "../site/site-footer.tsx";
 
 const compactField =
   "h-auto min-h-11 rounded-lg bg-surface-raised px-3 py-2.5 text-sm";
@@ -98,49 +101,49 @@ export function HomeScreen() {
     }
   });
 
-  const onJoin = joinForm.handleSubmit(async (values) => {
-    const code = parseRoomCode(values.roomId);
-    try {
-      await ensureUser(displayNameDraft.trim() || values.displayName);
-      const result = await joinRoom(code, values.password.trim() || undefined);
-      setRoom(result.room);
-      toast.success(t("toast.joined"));
-      await navigate({
-        to: "/rooms/$roomId",
-        params: { roomId: result.room.id },
-      });
-    } catch (error) {
-      if (isLockoutError(error)) {
-        setLockout(Date.now() + (error.remainingMs ?? 5 * 60 * 1000));
+  const onJoin = joinForm.handleSubmit(
+    async (values) => {
+      const code = parseRoomCode(values.roomId);
+      try {
+        let preview;
+        try {
+          preview = await getRoom(code);
+        } catch (error) {
+          if (isMissingRoomError(error) || (error instanceof ApiError && error.status === 400)) {
+            toast.error(t("join.notFound"));
+            return;
+          }
+          throw error;
+        }
+        if (preview.hasPassword && !values.password.trim()) {
+          toast.error(t("join.passwordRequired"));
+          return;
+        }
+        await ensureUser(displayNameDraft.trim() || values.displayName);
+        const result = await joinRoom(code, values.password.trim() || undefined);
+        setRoom(result.room);
+        toast.success(t("toast.joined"));
+        await navigate({
+          to: "/rooms/$roomId",
+          params: { roomId: result.room.id },
+        });
+      } catch (error) {
+        if (isLockoutError(error)) {
+          setLockout(Date.now() + (error.remainingMs ?? 5 * 60 * 1000));
+        }
+        toast.error(t(joinErrorMessageKey(error)));
       }
-      const codeName = error instanceof ApiError ? error.code : "";
-      if (
-        codeName === "invalid_password" ||
-        codeName === "cannot_join" ||
-        codeName === "unauthorized"
-      ) {
-        toast.error(t("join.invalidPassword"));
-        return;
-      }
-      if (codeName === "room_full" || codeName === "conflict") {
-        toast.error(t("join.full"));
-        return;
-      }
-      if (codeName === "not_found") {
-        toast.error(t("join.notFound"));
-        return;
-      }
-      if (codeName === "banned") {
-        toast.error(t("join.banned"));
-        return;
-      }
-      toast.error(t("toast.joinFailed"));
-    }
-  });
+    },
+    (errors) => {
+      if (errors.displayName) toast.error(t("join.needName"));
+    },
+  );
 
-  const createNameError = createForm.formState.errors.displayName?.message
+  const displayNameError = createForm.formState.errors.displayName?.message
     ? t(createForm.formState.errors.displayName.message)
-    : undefined;
+    : joinForm.formState.errors.displayName?.message
+      ? t(joinForm.formState.errors.displayName.message)
+      : undefined;
   const roomNameError = createForm.formState.errors.name?.message
     ? t(createForm.formState.errors.name.message)
     : undefined;
@@ -167,7 +170,7 @@ export function HomeScreen() {
         id="main"
         className={cn(
           "relative z-10 flex min-h-dvh flex-1 flex-col items-center justify-center overflow-x-hidden px-4 pt-20 sm:px-8 sm:pt-24",
-          compactChrome ? "pb-28" : "pb-10 sm:pb-12",
+          compactChrome ? "pb-32" : "pb-16 sm:pb-20",
         )}
       >
         <div className="relative z-10 flex h-full w-full max-w-[1400px] flex-col gap-12 xl:flex-row">
@@ -194,9 +197,9 @@ export function HomeScreen() {
                   error={Boolean(createForm.formState.errors.displayName)}
                   className="h-auto rounded-lg bg-surface-page px-3 py-2 text-sm"
                 />
-                {createNameError ? (
+                {displayNameError ? (
                   <p className="mt-1.5 text-xs text-danger" role="alert">
-                    {createNameError}
+                    {displayNameError}
                   </p>
                 ) : null}
               </div>
@@ -213,10 +216,14 @@ export function HomeScreen() {
                       id="room-id"
                       placeholder={t("home.roomIdPlaceholder")}
                       autoComplete="off"
-                      className={`${compactField} tracking-wide uppercase`}
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      className={`${compactField} font-mono tracking-wide`}
                       error={Boolean(joinForm.formState.errors.roomId)}
                       {...joinForm.register("roomId")}
                     />
+                    <p className="mt-1.5 text-xs text-ink-subtle">{t("home.roomIdHint")}</p>
                     {roomIdError ? (
                       <p className="mt-1.5 text-xs text-danger" role="alert">
                         {roomIdError}
@@ -316,6 +323,7 @@ export function HomeScreen() {
           </HomePanel>
         </div>
       </main>
+      <SiteFooter overlay />
     </div>
   );
 }

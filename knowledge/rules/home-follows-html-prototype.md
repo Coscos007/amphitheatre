@@ -49,7 +49,7 @@ Do not copy the HTML as product:
 - No emoji. Tabler icons in place of Material Symbols.
 - On mobile the form must not be clipped (`min-h-dvh` + scroll; `overflow: hidden` only at xl).
 
-Real actions on Home: create a room and join with a code/link (via the panel tabs). Nothing beyond that.
+Real actions on Home: create a room and join with a code/link (via the panel tabs). Centered **footer nav**: What is Amphitheatre (`/what-is`) and About (`/about`). Those routes are **editorial pages** (full width, large type, no Home dashboard card) — see [site-editorial-pages](/rules/site-editorial-pages.md). They are not the HTML prototype’s fake Discover/Library/Create. Nothing else.
 
 # Related
 
@@ -57,6 +57,7 @@ Real actions on Home: create a room and join with a code/link (via the panel tab
 - [App name is Amphitheatre](/rules/app-name-amphitheatre.md)
 - [Design tokens light dark](/rules/design-tokens-light-dark.md)
 - [i18n en pt es](/rules/i18n-en-pt-es.md)
+- [Site editorial pages](/rules/site-editorial-pages.md)
 - [No emoji in UI or docs](/rules/no-emoji-in-ui-or-docs.md)
 
 [^prototype]: knowledge/references/prototypes/home.html

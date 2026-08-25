@@ -1,0 +1,26 @@
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--admin-primary-action, #ff8e04);
+  outline-offset: 2px;
+}
+
+.admin-skip-link {
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  z-index: 4000;
+  transform: translateY(-160%);
+}
+
+.admin-skip-link:focus {
+  transform: none;
+}

@@ -56,18 +56,24 @@ services:
     environment:
       SESSION_SECRET: ${SESSION_SECRET}
       PUBLIC_APP_HOSTNAME: ${PUBLIC_APP_HOSTNAME}
+      PUBLIC_APP_ADMIN_HOSTNAME: ${PUBLIC_APP_ADMIN_HOSTNAME}
       PUBLIC_LIVEKIT_HOSTNAME: ${PUBLIC_LIVEKIT_HOSTNAME}
       PUBLIC_OME_HOSTNAME: ${PUBLIC_OME_HOSTNAME}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
       LIVEKIT_HTTP_URL: http://livekit:7880
+      LIVEKIT_METRICS_URL: http://livekit:6789/metrics
       OME_API_URL: http://ome:8081
       OME_API_ACCESS_TOKEN: ${OME_API_ACCESS_TOKEN}
       TRUST_PROXY: "true"
       COOKIE_SECURE: "true"
       DATABASE_PATH: /app/data/amphitheatre.sqlite
+      ADMIN_BIND: "0.0.0.0"
+      ADMIN_PORT: "3002"
     volumes:
       - app-data:/app/data
+    # ports:
+    #   - "127.0.0.1:3002:3002"
     networks: [amphitheatre]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health >/dev/null 2>&1 || exit 1"]
@@ -81,6 +87,10 @@ services:
       - traefik.http.routers.amphitheatre.entrypoints=websecure
       - traefik.http.routers.amphitheatre.tls.certresolver=letsencrypt
       - traefik.http.services.amphitheatre.loadbalancer.server.port=3001
+      - traefik.http.routers.amphitheatre-admin.rule=Host(`${PUBLIC_APP_ADMIN_HOSTNAME}`)
+      - traefik.http.routers.amphitheatre-admin.entrypoints=websecure
+      - traefik.http.routers.amphitheatre-admin.tls.certresolver=letsencrypt
+      - traefik.http.services.amphitheatre-admin.loadbalancer.server.port=3002
 
   redis:
     image: valkey/valkey:9.1.1-alpine

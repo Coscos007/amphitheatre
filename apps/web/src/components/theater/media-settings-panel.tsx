@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { MediaDeviceKindName } from "../../hooks/use-livekit.ts";
 import { readDevicePrefs, writeDevicePrefs } from "../../lib/device-prefs.ts";
+import { classifyGetUserMediaError, mediaFailureToastKey } from "../../lib/media-permissions.ts";
 import { Field } from "../ui/field.tsx";
 
 type DeviceLists = {
@@ -138,6 +139,7 @@ export function MediaSettingsPanel({
   const [prefs, setPrefs] = useState(readDevicePrefs);
   const [level, setLevel] = useState(0);
   const [testing, setTesting] = useState(false);
+  const [previewOn, setPreviewOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<MediaStream | null>(null);
   const meterRef = useRef<AudioContext | null>(null);
@@ -148,42 +150,44 @@ export function MediaSettingsPanel({
   const setMicRef = useRef(setMic);
   setMicRef.current = setMic;
 
+  const stopPreview = () => {
+    previewRef.current?.getTracks().forEach((track) => track.stop());
+    previewRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setPreviewOn(false);
+  };
+
   useEffect(() => {
     if (!active) return;
     void listDevices()
       .then(setDevices)
-      .catch(() => toast.error(t("toast.mediaError")));
+      .catch((err: unknown) => toast.error(t(mediaFailureToastKey(classifyGetUserMediaError(err)))));
   }, [active, listDevices, t]);
 
   useEffect(() => {
-    if (!active) return;
-    let cancelled = false;
-    const start = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: prefs.audioinput ? { deviceId: { exact: prefs.audioinput } } : true,
-          video: prefs.videoinput ? { deviceId: { exact: prefs.videoinput } } : true,
-        });
-        if (cancelled) {
-          for (const track of stream.getTracks()) track.stop();
-          return;
-        }
-        previewRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => undefined);
-        }
-      } catch {
-        if (!cancelled) toast.error(t("toast.mediaError"));
-      }
-    };
-    void start();
+    if (!active) stopPreview();
     return () => {
-      cancelled = true;
       previewRef.current?.getTracks().forEach((track) => track.stop());
       previewRef.current = null;
     };
-  }, [active, prefs.audioinput, prefs.videoinput, t]);
+  }, [active]);
+
+  const startPreview = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: prefs.videoinput ? { deviceId: { exact: prefs.videoinput } } : true,
+      });
+      previewRef.current?.getTracks().forEach((track) => track.stop());
+      previewRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => undefined);
+      }
+      setPreviewOn(true);
+    } catch (err) {
+      toast.error(t(mediaFailureToastKey(classifyGetUserMediaError(err))));
+    }
+  };
 
   const stopMicTest = async (restore: boolean) => {
     window.cancelAnimationFrame(rafRef.current);
@@ -234,8 +238,8 @@ export function MediaSettingsPanel({
     persist({ ...prefs, [kind]: deviceId });
     try {
       await switchDevice(kind, deviceId);
-    } catch {
-      toast.error(t("toast.mediaError"));
+    } catch (err) {
+      toast.error(t(mediaFailureToastKey(classifyGetUserMediaError(err))));
     }
   };
 
@@ -263,7 +267,7 @@ export function MediaSettingsPanel({
         const next = stream.getAudioTracks()[0];
         if (!next) {
           stream.getTracks().forEach((item) => item.stop());
-          toast.error(t("toast.mediaError"));
+          toast.error(t("toast.mediaNotFound"));
           return;
         }
         track = next;
@@ -273,8 +277,8 @@ export function MediaSettingsPanel({
         } else {
           previewRef.current = stream;
         }
-      } catch {
-        toast.error(t("toast.mediaError"));
+      } catch (err) {
+        toast.error(t(mediaFailureToastKey(classifyGetUserMediaError(err))));
         return;
       }
     }
@@ -290,7 +294,7 @@ export function MediaSettingsPanel({
 
     const AudioCtx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) {
-      toast.error(t("toast.mediaError"));
+      toast.error(t("toast.mediaUnsupported"));
       if (restoreMicRef.current) {
         restoreMicRef.current = false;
         await setMicRef.current?.(true);
@@ -391,8 +395,19 @@ export function MediaSettingsPanel({
           onChange={(value) => void onDevice("videoinput", value)}
         />
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="overflow-hidden rounded-[var(--radius-panel)] border border-border bg-black">
+          <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-border bg-black">
             <video ref={videoRef} className="aspect-video h-auto w-full object-cover" muted playsInline />
+            {previewOn ? null : (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 p-3">
+                <button
+                  type="button"
+                  className="label-caps min-h-11 rounded-[var(--radius-control)] bg-accent px-4 text-ink-on-accent hover:bg-accent-hover"
+                  onClick={() => void startPreview()}
+                >
+                  {t("settings.startCameraPreview")}
+                </button>
+              </div>
+            )}
           </div>
           <p className="self-center text-sm text-ink-muted">{t("settings.previewHint")}</p>
         </div>

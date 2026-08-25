@@ -1,4 +1,6 @@
 import type { JoinResponse, Room, SessionResponse } from "@coliseum/shared";
+import { createAdminApp } from "../src/admin-app";
+import { seedAdminCredentials } from "../src/admin-bootstrap";
 import { createApp, type AppDeps } from "../src/app";
 import { FakeClock } from "../src/clock";
 import { openDatabase } from "../src/db";
@@ -14,6 +16,8 @@ export const muteLivekit: LivekitService = {
   applyMute: async () => undefined,
   removeParticipant: async () => undefined,
   receiveWebhook: async () => null,
+  listRooms: async () => [],
+  listParticipants: async () => [],
 };
 
 export const downOme: OmeClient = {
@@ -27,6 +31,35 @@ export const downOme: OmeClient = {
       llhlsUrl: null,
     };
   },
+  async listStreams() {
+    return { reachable: false, keys: [] };
+  },
+  async streamStats() {
+    return {
+      reachable: false,
+      live: false,
+      lastThroughputIn: 0,
+      lastThroughputOut: 0,
+      totalBytesIn: 0,
+      totalBytesOut: 0,
+      totalConnections: 0,
+      connectionsWebrtc: 0,
+      connectionsLlhls: 0,
+    };
+  },
+  async appStats() {
+    return {
+      reachable: false,
+      live: false,
+      lastThroughputIn: 0,
+      lastThroughputOut: 0,
+      totalBytesIn: 0,
+      totalBytesOut: 0,
+      totalConnections: 0,
+      connectionsWebrtc: 0,
+      connectionsLlhls: 0,
+    };
+  },
 };
 
 export const healthyOme = (live = false): OmeClient => ({
@@ -35,8 +68,38 @@ export const healthyOme = (live = false): OmeClient => ({
       configured: true,
       healthy: true,
       live,
+      reachable: true,
       playbackUrl: live ? "ws://localhost:3333/app/x" : null,
       llhlsUrl: null,
+    };
+  },
+  async listStreams() {
+    return { reachable: true, keys: live ? ["stream-live"] : [] };
+  },
+  async streamStats() {
+    return {
+      reachable: true,
+      live,
+      lastThroughputIn: live ? 1000 : 0,
+      lastThroughputOut: live ? 2000 : 0,
+      totalBytesIn: live ? 10_000 : 0,
+      totalBytesOut: live ? 20_000 : 0,
+      totalConnections: live ? 1 : 0,
+      connectionsWebrtc: live ? 1 : 0,
+      connectionsLlhls: 0,
+    };
+  },
+  async appStats() {
+    return {
+      reachable: true,
+      live,
+      lastThroughputIn: live ? 1000 : 0,
+      lastThroughputOut: live ? 2000 : 0,
+      totalBytesIn: live ? 10_000 : 0,
+      totalBytesOut: live ? 20_000 : 0,
+      totalConnections: live ? 1 : 0,
+      connectionsWebrtc: live ? 1 : 0,
+      connectionsLlhls: 0,
     };
   },
 });
@@ -64,7 +127,7 @@ export function makeApp(options?: {
   clock?: FakeClock;
   ome?: OmeClient;
   livekit?: LivekitService;
-}): { app: ReturnType<typeof createApp>["app"]; clock: FakeClock; env: Env } {
+}): { app: ReturnType<typeof createApp>["app"]; clock: FakeClock; env: Env; deps: AppDeps } {
   const clock = options?.clock ?? new FakeClock(1_700_000_000_000);
   const env = testEnv(options?.env);
   const deps: AppDeps = {
@@ -75,7 +138,57 @@ export function makeApp(options?: {
     livekit: options?.livekit ?? muteLivekit,
   };
   const { app } = createApp(deps);
-  return { app, clock, env };
+  return { app, clock, env, deps };
+}
+
+export const TEST_ADMIN = {
+  username: "admin",
+  password: "test-pass-99",
+  apiKey: "amp_test_api_key_value12",
+};
+
+export async function makeAdminHarness(options?: {
+  env?: Partial<Env>;
+  clock?: FakeClock;
+  ome?: OmeClient;
+  livekit?: LivekitService;
+}): Promise<{
+  app: ReturnType<typeof createApp>["app"];
+  admin: ReturnType<typeof createAdminApp>;
+  clock: FakeClock;
+  env: Env;
+  deps: AppDeps;
+}> {
+  const clock = options?.clock ?? new FakeClock(1_700_000_000_000);
+  const env = testEnv(options?.env);
+  const db = openDatabase(":memory:");
+  await seedAdminCredentials(db, clock, TEST_ADMIN);
+  const deps: AppDeps = {
+    env,
+    db,
+    clock,
+    ome: options?.ome ?? downOme,
+    livekit: options?.livekit ?? muteLivekit,
+  };
+  const created = createApp(deps);
+  const admin = createAdminApp(deps, { rooms: created.rooms, hub: created.hub });
+  return { app: created.app, admin, clock, env, deps };
+}
+
+export async function loginAdmin(
+  admin: ReturnType<typeof createAdminApp>,
+  over: Partial<typeof TEST_ADMIN> = {},
+  ip = "203.0.113.10",
+): Promise<{ status: number; token?: string; body: Record<string, unknown> }> {
+  const res = await postJson(
+    admin,
+    "/api/admin/login",
+    { ...TEST_ADMIN, ...over },
+    undefined,
+    ip,
+  );
+  const body = (await res.json()) as Record<string, unknown>;
+  return { status: res.status, token: typeof body.token === "string" ? body.token : undefined, body };
 }
 
 export async function patchJson(

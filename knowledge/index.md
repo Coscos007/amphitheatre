@@ -24,6 +24,7 @@ Product vision (macro). Does not replace the contract in `packages/shared`.
 * [Safety limits](product/safety-limits/safety-limits.md) - rate limit, lockout, room caps
 * [Clients](product/clients/clients.md) - desktop SPA + separate mobile layout; i18n; theme
 * [Out of scope](product/out-of-scope/out-of-scope.md) - recording; Netflix is not a legal requirement
+* [Operator admin](product/operator-admin/operator-admin.md) - host monitoring console (separate port)
 
 # Rules
 
@@ -47,23 +48,27 @@ Rules the agent must apply when writing code.
 * [Pin Compose images](rules/pin-compose-images.md) - semver tags in Compose; no latest
 * [OME WebRTC first ABR](rules/ome-webrtc-first-abr.md) - OvenPlayer; WebRTC first; ABR on the server
 * [Home follows HTML prototype](rules/home-follows-html-prototype.md) - Home faithful to home.html; mock nav/cards are not a feature
+* [Site editorial pages](rules/site-editorial-pages.md) - /what-is and /about are full-bleed; What-is names no competing products
 * [Room follows HTML prototype](rules/room-follows-html-prototype.md) - room faithful to room.html / room-chat.html
 * [Stage pin grid](rules/stage-pin-grid.md) - auto-grid + pins on the stage
 * [Broadcast opt-in](rules/broadcast-opt-in.md) - stream off by default; secret key; embeds
 * [App name is Amphitheatre](rules/app-name-amphitheatre.md) - visible name Amphitheatre; @coliseum/* ids unchanged
 * [Theater header chrome](rules/theater-header-chrome.md) - desktop dock in the header; mobile bottom bar; hamburger; mic test loopback
 * [PWA and native share](rules/pwa-and-native-share.md) - installable PWA; icon canvas #2e1b08; locale-aware invite share
+* [Join errors are explicit](rules/join-errors-are-explicit.md) - GET preview for existing rooms; not_found vs invalid_password
+* [Media permissions need a user gesture](rules/media-permissions-need-a-user-gesture.md) - Allow mic/camera in General; no getUserMedia in useEffect
 * [Leave room must confirm](rules/leave-room-must-confirm.md) - leave the room only through the modal
 * [Not found infinite grid](rules/not-found-infinite-grid.md) - 404 with InfiniteGrid3D
 * [Chat flood soft-ban](rules/chat-flood-soft-ban.md) - 1024 chars; 1–2 min soft-ban
 * [AGPLv3 and CLA](rules/agplv3-and-cla.md) - AGPL-3.0-only; ICLA so SIMSDEV can relicense (SaaS)
 * [Public docs in English](rules/public-docs-english.md) - README/CONTRIBUTING/AGENTS/docs and knowledge/ in English
+* [Operator admin console](rules/operator-admin-console.md) - separate bind; admin identity; scrape LiveKit /metrics + OME REST; no Prometheus server
 
 # Changes
 
 What landed in the code, by date. One directory per feature.
 
-* [2026-08-25](changes/2026-08-25/) - Home join/create tabs; fullscreen appearance sheet with guest avatar; empty desktop stage centered; room QOL (General settings, unread chat, mobile drawer); Settings chrome, About version, integrated mobile tabs; About author link; YouTube embed Referer (Error 153); PWA install and native invite share
+* [2026-08-25](changes/2026-08-25/) - Operator occupancy/reset; operator admin console; Home join/create tabs; fullscreen appearance sheet with guest avatar; empty desktop stage centered; room QOL (General settings, unread chat, mobile drawer); Settings chrome, About version, integrated mobile tabs; About author link; YouTube embed Referer (Error 153); PWA install and native invite share; explicit join errors; mic/camera permission prompts; What is / About pages; editorial What is / About layout
 * [2026-08-24](changes/2026-08-24/) - InfiniteGrid3D on the Home background; Tabler Icons; browser locale; room rework (pin/grid, broadcast opt-in); QOL header/chat/About/logos; 404 + Leave modal + player reload; full-height stage and horizontal wordmark; settings modal (tabs, AGPLv3 About, reload in chrome); AGPLv3 + ICLA; English README, split docs, and OKF catalog; LiveKit remote audio playback and screen-share sound
 * [2026-08-23](changes/2026-08-23/) - Amphitheatre name; OME ABR + OvenPlayer; Home faithful to HTML; WebRTC on the default playlist (not /llhls); LL-HLS stage; LiveKit/OME/Valkey/Caddy pins; OME XML v0.21
 * [2026-08-22](changes/2026-08-22/) - bootstrap: monorepo, LiveKit/OME infra, API, SPA, load-testing docs, OKF catalog

@@ -60,7 +60,7 @@ services:
       - "7880:7880"      # HTTP API + SDK WebSocket
       - "7881:7881"      # WebRTC ICE/TCP
       - "7882:7882/udp"  # WebRTC UDP mux
-      - "127.0.0.1:6789:6789"  # Prometheus /metrics
+      - "127.0.0.1:6789:6789"  # Prometheus /metrics (operator sampler on the host uses LIVEKIT_METRICS_URL=http://127.0.0.1:6789/metrics)
       # Embedded TURN (disabled in livekit.yaml). If enabled, also publish:
       # - "3479:3479/udp"
       # - "3479:3479/tcp"

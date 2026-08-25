@@ -29,7 +29,7 @@ sources:
 - `GET /api/rooms/:id/livekit-token` and token on join (`livekitToken` / `livekitUrl`).
 - Grants: `canPublish` + sources camera, mic, screen. Moderation mute **removes** `MICROPHONE` from `canPublishSources` and calls RoomService `updateParticipant`.[^livekit-api]
 - SPA: `livekit-client` (not `@livekit/components-react` in this cut). Custom tiles. Remote **audio tracks are attached** (mic and screen-share audio); video tiles stay on `AttachVideo`. SDK default simulcast.[^hook]
-- Devices modal: on desktop, microphone and speaker sit in two columns (select above volume); mic test and the level meter span both columns. Starting the test mutes the published room mic (if it was on), plays a local self-listen loopback, and shows a visible level meter; stopping restores the previous mute state unless a moderator mute is in effect.
+- Devices modal: on desktop, microphone and speaker sit in two columns (select above volume); mic test and the level meter span both columns. Starting the test mutes the published room mic (if it was on), plays a local self-listen loopback, and shows a visible level meter; stopping restores the previous mute state unless a moderator mute is in effect. Camera preview starts only after a tap. Settings → General can request mic and camera on tap so Safari shows a prompt. Dock capture must not await `startAudio()` before `getUserMedia`.
 - Screen share requests tab/system audio (`audio` + Chromium `systemAudio: "include"`). Local screen audio is not played back. If the browser rejects the audio constraint, share continues as video-only.
 - `room.startAudio()` after connect and on user gestures; toast when autoplay still blocks. Speaking indicators are not treated as proof of audible output.
 - SFU: image `livekit/livekit-server:v1.13.5`, UDP mux `7882`, ICE TCP `7881`, Valkey DB 1 (RESP), `max_participants: 50`, no egress.[^yaml]
@@ -49,6 +49,7 @@ Speaking, camera, screen, `connectionQuality` mapped to `excellent|good|poor|los
 # Related
 
 - [LiveKit remote audio must play](/rules/livekit-remote-audio-must-play.md)
+- [Media permissions need a user gesture](/rules/media-permissions-need-a-user-gesture.md)
 - [Valkey for LiveKit](/rules/valkey-for-livekit.md)
 - [OME independent of WebRTC](/rules/ome-independent-of-webrtc.md)
 - [No recording](/rules/no-recording.md)

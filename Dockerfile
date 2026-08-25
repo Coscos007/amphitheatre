@@ -1,12 +1,11 @@
-# Amphitheatre — single image with the API (Hono/Bun) and the built web app.
+# Amphitheatre — single image with the API (Hono/Bun), the theater SPA, and the operator SPA.
 #
-# The API serves the compiled SPA directly (apps/api/src/app.ts), so the
-# whole product runs as ONE container on ONE port. LiveKit and (optionally)
-# OvenMediaEngine still run as separate containers/services — see
-# docs/self-hosting.md and deploy/docker-compose.yml.
+# The API serves the compiled theater from apps/api/public on PORT 3001 and the
+# operator console from public-admin on ADMIN_PORT 3002. LiveKit and (optionally)
+# OvenMediaEngine still run as separate containers — see docs/self-hosting.md.
 #
 # Build:  docker build -t amphitheatre .
-# Run:    docker run -p 3001:3001 -v amphitheatre-data:/app/data amphitheatre
+# Run:    docker run -p 3001:3001 -p 127.0.0.1:3002:3002 -v amphitheatre-data:/app/data amphitheatre
 
 # ---- deps: install the full pnpm workspace (needed to build the web app) ----
 #
@@ -23,6 +22,7 @@ RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
+COPY apps/admin/package.json apps/admin/package.json
 COPY packages/shared/package.json packages/shared/package.json
 RUN pnpm install --frozen-lockfile
 
@@ -30,14 +30,17 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 RUN pnpm --filter @coliseum/web build
+RUN pnpm --filter @coliseum/admin build
 RUN pnpm --filter @coliseum/api deploy --prod --legacy /out/api
 
 # ---- runtime: Bun only, no Node/pnpm, no dev dependencies ----
 FROM oven/bun:1.2-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+ENV ADMIN_BIND=0.0.0.0
 COPY --from=build /out/api ./
 COPY --from=build /repo/apps/web/dist ./public
-EXPOSE 3001
+COPY --from=build /repo/apps/admin/dist ./public-admin
+EXPOSE 3001 3002
 VOLUME ["/app/data"]
 CMD ["bun", "run", "src/index.ts"]

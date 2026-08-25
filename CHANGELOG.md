@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-25
+
+### Added
+
+- Operator console occupancy is theater presence after dropping stale `left_at IS NULL` rows (crashed tabs / API restart). KPI cards explain each number. Operators can factory-reset theater rooms and metrics with a typed confirmation phrase; operator accounts stay. Guest theater API is unchanged.
+- Operator console on a separate bind/port (`ADMIN_PORT` 3002): Mantine SPA, `/api/admin/*`, occupancy and peak members, LiveKit `/metrics` scrape plus OME REST samples (no Prometheus server). Guest theater API is unchanged.
+- **What is Amphitheatre?** (`/what-is`) and **About** (`/about`) explain the product in plain language (no competing product names). Copy sits in a readable column, not a glass card.
+- Settings → General can request microphone and camera access on tap, with copy for Safari and iOS when the prompt never appears.
+
+### Changed
+
+- `/about` is centered like the missing-room screen. Copy states it is open source (self-host and contribute). Buy me a coffee is the primary button; GitHub is outline. The four open-source tools sit in a named grid. No “open a room” CTA on this page.
+- `GET /api/rooms/:id` returns a preview for existing private rooms so invite links open the join screen instead of a fake 404. Join of a missing room is `not_found`; a wrong password is `invalid_password` on public and private rooms.
+- The Home room-code field keeps mixed case (room ids are case-sensitive) and does not auto-capitalize on mobile.
+
+### Fixed
+
+- Occupied rooms / people now counted members who never called leave (SQLite `left_at` null), including after a closed tab or API restart.
+- Operator console password field on the Operators page crashed with `Cannot read properties of null (reading 'value')` and was too small to use.
+- Safari/mobile often failed mic and camera with a permission error without showing a prompt: capture no longer waits on `startAudio()` first, and Devices camera preview starts only after a tap.
+- Joining a non-existent room from Home no longer shows “password does not match”. Joining without a display name asks for a name.
+
 ## [1.1.0] - 2026-08-25
 
 ### Added
@@ -60,6 +82,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Multi-arch Docker release build: pin the JS-only `deps`/`build` stages in `Dockerfile` to `--platform=$BUILDPLATFORM` so `pnpm install`/`vite build` run natively on the runner instead of crashing under QEMU emulation ("illegal instruction") while cross-building `linux/arm64`.
 
-[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.2.0
 [1.1.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.1.0
 [1.0.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.0.0

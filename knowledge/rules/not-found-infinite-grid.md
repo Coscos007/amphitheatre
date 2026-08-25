@@ -18,7 +18,7 @@ sources:
 
 Pages that do not exist (`/anything`) and room URLs whose `GET /api/rooms/:id` returns 404 or 400 (invalid id) render `NotFoundScreen`: the same `InfiniteGrid3D` as Home, content **centered** (mark, title, copy, button to `/`). No JoinGate in that case.
 
-A **private** room the visitor has not joined also returns 404 on GET (do not leak existence). The invite enters from Home with the code; the join POST still returns `cannot_join` if the password fails. Do not invent a GET that distinguishes “does not exist” from “private”.
+A room that **exists** (including private / password-protected) must **not** use this 404 screen. `GET /api/rooms/:id` returns a preview so the invite can open JoinGate. See [join-errors-are-explicit](/rules/join-errors-are-explicit.md).
 
 Copy in `en` / `pt-BR` / `es`. No emoji.
 

@@ -67,6 +67,12 @@ export type Env = {
   CORS_ORIGINS: string[];
   SESSION_SECRET: string;
   DATABASE_PATH: string;
+  ADMIN_PORT: number;
+  ADMIN_BIND: string;
+  ADMIN_ENABLED: boolean;
+  LIVEKIT_METRICS_URL: string;
+  METRICS_INTERVAL_MS: number;
+  METRICS_RETENTION_DAYS: number;
   TRUST_PROXY: boolean;
   COOKIE_SECURE: boolean;
   NODE_ENV: string;
@@ -99,6 +105,7 @@ export type Env = {
   RATE_CHAT: { limit: number; windowMs: number };
   RATE_TOKEN: { limit: number; windowMs: number };
   RATE_ROLES: { limit: number; windowMs: number };
+  RATE_ADMIN_LOGIN: { limit: number; windowMs: number };
 };
 
 export function loadEnv(overrides: Partial<Env> = {}): Env {
@@ -117,7 +124,7 @@ export function loadEnv(overrides: Partial<Env> = {}): Env {
     "CORS_ORIGIN",
     publicAppHostname
       ? `https://${publicAppHostname}`
-      : "http://localhost:5173,http://127.0.0.1:5173",
+      : "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
   );
   const base: Env = {
     PORT: intEnv("API_PORT", intEnv("PORT", 3001)),
@@ -127,6 +134,12 @@ export function loadEnv(overrides: Partial<Env> = {}): Env {
       .filter(Boolean),
     SESSION_SECRET: strEnv("SESSION_SECRET", "coliseum-dev-session-secret-change-me"),
     DATABASE_PATH: strEnv("DATABASE_PATH", "./data/coliseum.sqlite"),
+    ADMIN_PORT: intEnv("ADMIN_PORT", 3002),
+    ADMIN_BIND: strEnv("ADMIN_BIND", "127.0.0.1"),
+    ADMIN_ENABLED: boolEnv("ADMIN_ENABLED", true),
+    LIVEKIT_METRICS_URL: strEnv("LIVEKIT_METRICS_URL", "http://127.0.0.1:6789/metrics"),
+    METRICS_INTERVAL_MS: intEnv("METRICS_INTERVAL_MS", 15_000),
+    METRICS_RETENTION_DAYS: intEnv("METRICS_RETENTION_DAYS", 30),
     TRUST_PROXY: boolEnv("TRUST_PROXY", false),
     COOKIE_SECURE: boolEnv("COOKIE_SECURE", false),
     NODE_ENV: strEnv("NODE_ENV", "development"),
@@ -165,6 +178,7 @@ export function loadEnv(overrides: Partial<Env> = {}): Env {
     RATE_CHAT: { limit: 20, windowMs: 10 * 1000 },
     RATE_TOKEN: { limit: 20, windowMs: 60 * 1000 },
     RATE_ROLES: { limit: 30, windowMs: 60 * 1000 },
+    RATE_ADMIN_LOGIN: { limit: 10, windowMs: 60 * 1000 },
   };
   return { ...base, ...overrides };
 }

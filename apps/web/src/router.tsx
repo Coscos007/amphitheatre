@@ -9,6 +9,8 @@ import {
 import { Toaster } from "sonner";
 import { HomeScreen } from "./components/home/home-screen.tsx";
 import { NotFoundScreen } from "./components/not-found-screen.tsx";
+import { AboutPage } from "./components/site/about-page.tsx";
+import { WhatIsPage } from "./components/site/what-is-page.tsx";
 import { TheaterScreen } from "./components/theater/theater-screen.tsx";
 import { useUiStore } from "./stores/ui-store.ts";
 
@@ -44,7 +46,19 @@ const roomRoute = createRoute({
   component: RoomRoute,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, roomRoute]);
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/about",
+  component: AboutPage,
+});
+
+const whatIsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/what-is",
+  component: WhatIsPage,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, roomRoute, aboutRoute, whatIsRoute]);
 
 export function makeRouter(queryClient: QueryClient) {
   return createRouter({

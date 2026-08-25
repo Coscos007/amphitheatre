@@ -36,12 +36,13 @@ import {
   setRole,
   updateBroadcast,
   updateChatFloodBanSec,
+  updatePeakMembers,
   upsertJoin,
   type MembershipRow,
   type RoomRow,
 } from "./db";
 import type { Env } from "./env";
-import { cannotJoin, forbidden, HttpError, lockedOut } from "./http-error";
+import { forbidden, HttpError, invalidPassword, lockedOut } from "./http-error";
 import { composeStreamKey, newRoomId } from "./ids";
 import type { LivekitService } from "./livekit";
 import { logger } from "./logger";
@@ -99,7 +100,7 @@ function publicRoom(row: RoomRow, memberCount: number, members?: RoomMember[]): 
 }
 
 export class RoomService {
-  constructor(private readonly deps: RoomServiceDeps) {}
+  constructor(readonly deps: RoomServiceDeps) {}
 
   listPublic(): Room[] {
     const { db } = this.deps;
@@ -112,11 +113,7 @@ export class RoomService {
       throw new HttpError(404, "not_found", "Sala nao encontrada");
     }
     const membership = viewer ? getMembership(this.deps.db, id, viewer.userId) : null;
-    const isMember = Boolean(membership);
-    if (!isMember && row.is_public !== 1) {
-      throw new HttpError(404, "not_found", "Sala nao encontrada");
-    }
-    const members = isMember ? listMemberships(this.deps.db, id).map(toMember) : undefined;
+    const members = membership ? listMemberships(this.deps.db, id).map(toMember) : undefined;
     return publicRoom(row, countPresent(this.deps.db, id), members);
   }
 
@@ -163,6 +160,7 @@ export class RoomService {
       broadcast_provider: "none",
       broadcast_embed: null,
       chat_flood_ban_sec: 60,
+      peak_members: 0,
     };
     insertRoom(db, row);
     upsertJoin(db, {
@@ -172,6 +170,7 @@ export class RoomService {
       displayName: owner.displayName,
       now,
     });
+    updatePeakMembers(db, id);
     logger.info("room_created", { roomId: id });
     return publicRoom(row, 1, [
       {
@@ -191,9 +190,7 @@ export class RoomService {
 
     const row = getRoom(db, roomId);
     if (!row) {
-      const locked = recordPasswordFailure(db, env, clock, roomId, ip, user.userId);
-      if (locked > 0) throw lockedOut(locked);
-      throw cannotJoin();
+      throw new HttpError(404, "not_found", "Sala nao encontrada");
     }
 
     if (isBanned(db, roomId, user.userId)) {
@@ -203,14 +200,14 @@ export class RoomService {
     const existing = getMembership(db, roomId, user.userId);
     const skipPassword = existing?.left_at === null || row.owner_id === user.userId;
     if (row.password_hash && !skipPassword) {
-      const ok = password ? await Bun.password.verify(password, row.password_hash) : false;
+      if (!password) {
+        throw invalidPassword("Esta sala exige senha");
+      }
+      const ok = await Bun.password.verify(password, row.password_hash);
       if (!ok) {
         const locked = recordPasswordFailure(db, env, clock, roomId, ip, user.userId);
         if (locked > 0) throw lockedOut(locked);
-        if (row.is_public === 1) {
-          throw new HttpError(403, "invalid_password", "Senha invalida");
-        }
-        throw cannotJoin();
+        throw invalidPassword();
       }
     }
 
@@ -228,6 +225,7 @@ export class RoomService {
       displayName: user.displayName,
       now: clock.now(),
     });
+    updatePeakMembers(db, roomId);
     clearLockouts(db, roomId, ip, user.userId);
 
     const membership = getMembership(db, roomId, user.userId);

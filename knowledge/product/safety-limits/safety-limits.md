@@ -44,7 +44,7 @@ HTTP 429 + `retryAfterMs` + `Retry-After`. Exceeded chat is a drop on the WS.
 
 LiveKit `max_participants: 50` is a safety net; the API rejects the 51st.
 
-Join privacy: non-public rooms do not distinguish 404 from a wrong password (`cannot_join`).
+Join privacy: `GET /api/rooms/:id` returns a preview for existing rooms (no member list for non-members). Missing id: `not_found`. Wrong password: `invalid_password`. See [join-errors-are-explicit](/rules/join-errors-are-explicit.md).
 
 # Intended
 

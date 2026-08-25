@@ -45,9 +45,16 @@ export function JoinGate({
         <h1 className="font-display text-3xl font-bold text-ink">
           {t("join.title", { name: roomName ?? t("join.untitled") })}
         </h1>
+        <p className="mt-3 text-sm text-ink-muted">
+          {hasPassword ? t("join.passwordLead") : t("join.needNameLead")}
+        </p>
         <form
           className="mt-8 flex flex-col gap-4"
           onSubmit={form.handleSubmit(async (values) => {
+            if (hasPassword && !values.password.trim()) {
+              form.setError("password", { type: "manual", message: "join.passwordRequired" });
+              return;
+            }
             await onJoin({
               displayName: values.displayName,
               password: values.password.trim() || undefined,
@@ -57,6 +64,7 @@ export function JoinGate({
           <Field
             id="gate-name"
             label={t("home.displayName")}
+            hint={t("home.displayNameHint")}
             error={
               form.formState.errors.displayName?.message
                 ? t(form.formState.errors.displayName.message)
@@ -66,7 +74,15 @@ export function JoinGate({
             <Input id="gate-name" autoComplete="nickname" {...form.register("displayName")} />
           </Field>
           {hasPassword ? (
-            <Field id="gate-password" label={t("join.password")}>
+            <Field
+              id="gate-password"
+              label={t("join.password")}
+              error={
+                form.formState.errors.password?.message
+                  ? t(form.formState.errors.password.message)
+                  : undefined
+              }
+            >
               <Input
                 id="gate-password"
                 type="password"

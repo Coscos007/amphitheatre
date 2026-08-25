@@ -87,6 +87,8 @@ docker compose up -d          # (or the Traefik command from Step 4)
 
 Open `https://amp.example.com` (your own `PUBLIC_APP_HOSTNAME`). That's it — chat, voice, camera, and screen share are working.
 
+The **operator console** is not on that public hostname. Compose publishes it only on the server loopback: `http://127.0.0.1:3002` (SSH tunnel from your laptop). First boot writes username, password, and API key to `data/admin-bootstrap.txt` inside the `amphitheatre-app-data` volume. Full guide: [Operator admin](operator-admin.md).
+
 Want the optional broadcast stage too?
 
 ```bash
@@ -102,7 +104,9 @@ You can also run just the app container against a LiveKit you already have (self
 ```bash
 docker run -d \
   -p 3001:3001 \
+  -p 127.0.0.1:3002:3002 \
   -e SESSION_SECRET=change-me \
+  -e ADMIN_BIND=0.0.0.0 \
   -e LIVEKIT_API_KEY=... -e LIVEKIT_API_SECRET=... -e LIVEKIT_URL=wss://your-livekit-host \
   -v amphitheatre-data:/app/data \
   simstosh/amphitheatre:latest
@@ -113,7 +117,8 @@ docker run -d \
 | Port | Service | Needed when |
 |---|---|---|
 | 443/tcp+udp, 80/tcp | Your reverse proxy (Caddy or Traefik) | Always (public HTTPS) |
-| 3001/tcp | The app | Only if you run it **without** a reverse proxy (`docker-compose.yml` default) |
+| 3001/tcp | The app (theater) | Only if you run it **without** a reverse proxy (`docker-compose.yml` default) |
+| 3002/tcp on `127.0.0.1` | Operator console | Always in Compose (loopback only). Do not publish this on `0.0.0.0`. |
 | 7880/tcp | LiveKit signalling | Only if you run it **without** a reverse proxy |
 | 7881/tcp | LiveKit — fallback for restrictive networks | Always |
 | 7882/udp | LiveKit — voice/camera/screen media | Always |
