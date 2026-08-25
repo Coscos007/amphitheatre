@@ -23,6 +23,8 @@ The user **pins** one or more views:
 - 0 pins: equal grid for everyone
 - 1+ pins: pins occupy the main area in auto-grid; the rest sits on a rail (right on desktop, strip at the bottom on mobile)
 
+On **mobile** (`compact`), do not use the pin rail. All tiles sit in a Google Meet-style grid: **one column for a single tile, two columns otherwise**. An odd leftover tile spans the full row.
+
 Pin is a local view preference, not room state. Default: if broadcast is on, it starts pinned; otherwise the first screenshare.
 
 # Related

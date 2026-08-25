@@ -24,7 +24,8 @@ Code and process rules. The agent must apply them; if the user changes a durable
 * [Stage pin grid](stage-pin-grid.md) - auto-grid + pins
 * [Broadcast opt-in](broadcast-opt-in.md) - stream off by default; secret key
 * [App name is Amphitheatre](app-name-amphitheatre.md) - visible name Amphitheatre; @coliseum/* packages unchanged
-* [Theater header chrome](theater-header-chrome.md) - dock in the header; tiles on hover; Discord-style devices
+* [Theater header chrome](theater-header-chrome.md) - desktop dock in the header; mobile bottom bar; hamburger; mic test loopback
+* [PWA and native share](pwa-and-native-share.md) - installable PWA; icon canvas #2e1b08; locale-aware invite share
 * [Leave room must confirm](leave-room-must-confirm.md) - logo, Leave, and history open the Leave modal
 * [Not found infinite grid](not-found-infinite-grid.md) - 404 and missing room use the Home background
 * [Chat flood soft-ban](chat-flood-soft-ban.md) - 1024 chars; 1–2 min pause on flood

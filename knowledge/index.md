@@ -51,7 +51,8 @@ Rules the agent must apply when writing code.
 * [Stage pin grid](rules/stage-pin-grid.md) - auto-grid + pins on the stage
 * [Broadcast opt-in](rules/broadcast-opt-in.md) - stream off by default; secret key; embeds
 * [App name is Amphitheatre](rules/app-name-amphitheatre.md) - visible name Amphitheatre; @coliseum/* ids unchanged
-* [Theater header chrome](rules/theater-header-chrome.md) - dock in the header; tooltip; tile hover
+* [Theater header chrome](rules/theater-header-chrome.md) - desktop dock in the header; mobile bottom bar; hamburger; mic test loopback
+* [PWA and native share](rules/pwa-and-native-share.md) - installable PWA; icon canvas #2e1b08; locale-aware invite share
 * [Leave room must confirm](rules/leave-room-must-confirm.md) - leave the room only through the modal
 * [Not found infinite grid](rules/not-found-infinite-grid.md) - 404 with InfiniteGrid3D
 * [Chat flood soft-ban](rules/chat-flood-soft-ban.md) - 1024 chars; 1–2 min soft-ban
@@ -62,6 +63,7 @@ Rules the agent must apply when writing code.
 
 What landed in the code, by date. One directory per feature.
 
+* [2026-08-25](changes/2026-08-25/) - Home join/create tabs; fullscreen appearance sheet with guest avatar; empty desktop stage centered; room QOL (General settings, unread chat, mobile drawer); Settings chrome, About version, integrated mobile tabs; About author link; YouTube embed Referer (Error 153); PWA install and native invite share
 * [2026-08-24](changes/2026-08-24/) - InfiniteGrid3D on the Home background; Tabler Icons; browser locale; room rework (pin/grid, broadcast opt-in); QOL header/chat/About/logos; 404 + Leave modal + player reload; full-height stage and horizontal wordmark; settings modal (tabs, AGPLv3 About, reload in chrome); AGPLv3 + ICLA; English README, split docs, and OKF catalog; LiveKit remote audio playback and screen-share sound
 * [2026-08-23](changes/2026-08-23/) - Amphitheatre name; OME ABR + OvenPlayer; Home faithful to HTML; WebRTC on the default playlist (not /llhls); LL-HLS stage; LiveKit/OME/Valkey/Caddy pins; OME XML v0.21
 * [2026-08-22](changes/2026-08-22/) - bootstrap: monorepo, LiveKit/OME infra, API, SPA, load-testing docs, OKF catalog

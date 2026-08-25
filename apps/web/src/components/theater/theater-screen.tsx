@@ -21,6 +21,8 @@ import { canManageBroadcast, canSeeIngest } from "../../lib/permissions.ts";
 import { useDelayedFlag, useTheaterLayout } from "../../hooks/use-media.ts";
 import { useLivekitRoom } from "../../hooks/use-livekit.ts";
 import { useRoomSocket } from "../../hooks/use-room-socket.ts";
+import { useUnreadChat } from "../../hooks/use-unread-chat.ts";
+import type { SideTab } from "./theater-side-panel.tsx";
 import { useRoomStore } from "../../stores/room-store.ts";
 import { useSessionStore } from "../../stores/session-store.ts";
 import { TheaterSkeleton } from "../ui/skeleton.tsx";
@@ -62,6 +64,8 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
   const [joined, setJoined] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [sideTab, setSideTab] = useState<SideTab>("chat");
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const allowNavRef = useRef(false);
 
   useEffect(() => {
@@ -88,12 +92,23 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
     if (roomQuery.data) setRoom(roomQuery.data);
   }, [roomQuery.data, setRoom]);
 
+  const chatVisible =
+    layout === "mobile" ? mobileDrawerOpen && sideTab === "chat" : sideTab === "chat";
+  const unreadChat = useUnreadChat({
+    messages,
+    selfId: user?.userId,
+    chatVisible,
+    enabled: joined,
+  });
+
   useEffect(() => {
-    document.title = room?.name ? `${room.name} · Amphitheatre` : "Amphitheatre";
+    const base = room?.name ? `${room.name} · Amphitheatre` : "Amphitheatre";
+    const badge = unreadChat > 99 ? "99+" : String(unreadChat);
+    document.title = unreadChat > 0 ? `(${badge}) ${base}` : base;
     return () => {
       document.title = "Amphitheatre";
     };
-  }, [room?.name]);
+  }, [room?.name, unreadChat]);
 
   const applyJoin = useCallback(
     (result: Awaited<ReturnType<typeof joinRoom>>) => {
@@ -299,22 +314,33 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
     />
   );
 
-  const Layout = layout === "mobile" ? MobileTheaterLayout : DesktopTheaterLayout;
   const memberCount = (room.members ?? []).filter((member) => member.present).length;
+  const layoutProps = {
+    roomName: room.name,
+    status: <BroadcastStatus broadcast={broadcast} omeLive={omeLive} />,
+    memberCount,
+    stage,
+    members,
+    chat,
+    controls,
+    onSettings: () => setSettingsOpen(true),
+    onLeaveHome: requestLeave,
+    sideTab,
+    onSideTabChange: setSideTab,
+    unreadChat,
+  };
 
   return (
     <>
-      <Layout
-        roomName={room.name}
-        status={<BroadcastStatus broadcast={broadcast} omeLive={omeLive} />}
-        memberCount={memberCount}
-        stage={stage}
-        members={members}
-        chat={chat}
-        controls={controls}
-        onSettings={() => setSettingsOpen(true)}
-        onLeaveHome={requestLeave}
-      />
+      {layout === "mobile" ? (
+        <MobileTheaterLayout
+          {...layoutProps}
+          drawerOpen={mobileDrawerOpen}
+          onDrawerOpenChange={setMobileDrawerOpen}
+        />
+      ) : (
+        <DesktopTheaterLayout {...layoutProps} />
+      )}
       <LeaveRoomDialog open={leaveOpen} onCancel={cancelLeave} onConfirm={confirmLeave} />
       <RoomSettingsModal
         open={settingsOpen}
@@ -328,6 +354,9 @@ export function TheaterScreen({ roomId }: { roomId: string }) {
         switchDevice={livekit.switchDevice}
         setOutputVolume={livekit.setOutputVolume}
         setInputVolume={livekit.setInputVolume}
+        micEnabled={micEnabled}
+        micLocked={Boolean(selfMember?.muted)}
+        setMic={livekit.setMic}
         onChatSaved={(sec) => setRoom({ ...room, chatFloodBanSec: sec })}
       />
     </>

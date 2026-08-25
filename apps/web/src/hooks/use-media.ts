@@ -26,6 +26,10 @@ export function useTheaterLayout(): "mobile" | "desktop" {
   return layout;
 }
 
+export function useCompactChrome(): boolean {
+  return useTheaterLayout() === "mobile";
+}
+
 export function useDelayedFlag(active: boolean, delayMs = 300): boolean {
   const [show, setShow] = useState(false);
 

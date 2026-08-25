@@ -1,2 +1,2 @@
-/** Product version shown in Settings > About. Keep aligned with `@coliseum/web`. */
-export const APP_VERSION = "0.1.0";
+/** Product version shown in Settings > About. Same as the GitHub Release / git tag (root `package.json`). */
+export const APP_VERSION = __APP_VERSION__;

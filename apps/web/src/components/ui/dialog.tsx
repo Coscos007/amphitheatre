@@ -10,7 +10,7 @@ type DialogProps = {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: "md" | "lg" | "xl";
+  size?: "md" | "lg" | "xl" | "full";
   bodyClassName?: string;
 };
 
@@ -25,7 +25,7 @@ export function Dialog({
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const { t } = useTranslation();
-  const fill = size === "xl";
+  const fill = size === "xl" || size === "full";
 
   useEffect(() => {
     const el = ref.current;
@@ -41,15 +41,27 @@ export function Dialog({
         "arena-dialog",
         size === "lg" && "arena-dialog-lg",
         size === "xl" && "arena-dialog-xl",
+        size === "full" && "arena-dialog-full",
       )}
       onClose={onClose}
       onClick={(event) => {
+        if (size === "full") return;
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-3">
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between gap-3 border-b border-border px-5",
+          size === "full" ? "py-4" : "py-3",
+        )}
+      >
         <h2 className="font-sans text-base font-semibold leading-6 text-ink">{title}</h2>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("app.close")}>
+        <Button
+          variant="ghost"
+          size={size === "full" ? "iconTouch" : "icon"}
+          onClick={onClose}
+          aria-label={t("app.close")}
+        >
           <IconX aria-hidden="true" />
         </Button>
       </div>

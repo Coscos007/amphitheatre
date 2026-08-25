@@ -18,8 +18,8 @@ export function BroadcastStatus({ broadcast, omeLive }: BroadcastStatusProps) {
 
   return (
     <span
-      className={cn(
-        "label-caps ml-0 inline-flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-full border px-2.5 py-0.5 text-[10px] tracking-wider sm:ml-2 sm:max-w-none",
+          className={cn(
+        "label-caps inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] tracking-wider whitespace-nowrap sm:ml-2",
         live
           ? "border-accent/40 bg-accent-soft text-accent"
           : "border-border bg-surface-raised/50 text-ink-muted",

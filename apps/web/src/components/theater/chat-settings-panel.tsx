@@ -35,12 +35,14 @@ export function ChatSettingsPanel({ roomId, floodBanSec, active, onSaved }: Chat
   };
 
   return (
-    <fieldset className="flex flex-col gap-3 border-0 p-0">
-      <legend className="label-caps text-ink">{t("settings.chatFloodTitle")}</legend>
-      <p className="text-sm text-ink-muted">{t("settings.chatFloodHint")}</p>
-      <div className="flex flex-col gap-2">
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <h3 className="label-caps text-ink">{t("settings.chatFloodTitle")}</h3>
+        <p className="text-sm text-ink-muted">{t("settings.chatFloodHint")}</p>
+      </div>
+      <div className="flex flex-col gap-1" role="radiogroup" aria-label={t("settings.chatFloodTitle")}>
         {CHAT_FLOOD_BAN_SECONDS.map((sec) => (
-          <label key={sec} className="flex min-h-11 items-center gap-2 text-sm text-ink">
+          <label key={sec} className="flex min-h-9 items-center gap-2 text-sm text-ink">
             <input
               type="radio"
               name="chat-flood-ban"
@@ -52,11 +54,11 @@ export function ChatSettingsPanel({ roomId, floodBanSec, active, onSaved }: Chat
           </label>
         ))}
       </div>
-      <div className="flex justify-end">
-        <Button type="button" disabled={busy} onClick={() => void save()}>
+      <div className="flex justify-stretch sm:justify-end">
+        <Button type="button" className="w-full sm:w-auto" disabled={busy} onClick={() => void save()}>
           {t("settings.saveChat")}
         </Button>
       </div>
-    </fieldset>
+    </section>
   );
 }

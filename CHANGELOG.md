@@ -6,14 +6,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-25
+
 ### Added
 
 - Screen share can include tab or system audio (Chromium picker). If the browser rejects the audio constraint, share continues as video-only.
+- Progressive Web App: web app manifest, Apple install meta, production service worker (network passthrough so Chromium can install), and app icons on a `#2e1b08` canvas (maskable + any). Compact Home always suggests installing; the hamburger and Settings → General offer Install as app until the session is already standalone.
+- Invite uses the device share sheet (`navigator.share`) with title and text in the active UI locale; the room URL is in the text. Clipboard copy is the fallback.
 
 ### Fixed
 
 - LiveKit voice was silent for everyone even when the speaking indicator lit up: remote audio tracks are now attached and autoplay is unlocked (`room.startAudio()` plus an enable-audio prompt).
 - Deploy Compose now passes `OME_API_ACCESS_TOKEN` into the OvenMediaEngine container, matching `<AccessToken>` in `Server.xml`, so the app can poll whether a stream is live.
+- YouTube stage embeds failed with Error 153 (HTTP Referer): Hono was sending `Referrer-Policy: no-referrer`. The API, the iframe, and the HTML meta now use `strict-origin-when-cross-origin`. The iframe no longer adds an `origin=` query param (that is for the IFrame Player API, not a plain embed).
+
+### Changed
+
+- Mobile Home and room chrome: header is wordmark + Settings + an appearance menu (theme and language); the media dock is a full-width floating bar at the bottom with icon-only buttons; an offline broadcast message sizes to its content instead of sitting inside the video tile; microphone test shows a level meter, mutes the room mic while you listen to yourself, and restores the previous mute state.
+- Home compact layout: hero and mood chips are centered; join/create are tabs (join first); the hamburger opens a fullscreen appearance sheet with a close button; the guest avatar lives inside that sheet.
+- Desktop empty stage (“the stage is yours”) is centered in the stage frame.
+- Room QOL: Settings-only header; General tab for theme and language; unread chat badge and `(n)` document title; mobile Settings is fullscreen; Audience/Chat is a bottom drawer; mobile cameras use a 1–2 column grid.
+- Settings chrome: tighter flood-pause spacing; Devices is a two-column Discord-style grid on desktop; About shows the root `package.json` version (same as the GitHub Release tag); mobile room title left / broadcast badge right; Audience/Chat tabs share the drawer card and use the panel corner radius.
+- About credits the author as a link to sims.dev.br. Source on GitHub is an outline button; Buy me a coffee is the filled primary. The Portfolio button is gone.
+- Open Graph / Twitter use `summary_large_image` with 1200×630 dimensions and alt text. The GitHub `canonical` link is gone so crawlers treat the live origin as the page URL.
 
 ## [1.0.0] - 2026-08-24
 
@@ -45,5 +60,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Multi-arch Docker release build: pin the JS-only `deps`/`build` stages in `Dockerfile` to `--platform=$BUILDPLATFORM` so `pnpm install`/`vite build` run natively on the runner instead of crashing under QEMU emulation ("illegal instruction") while cross-building `linux/arm64`.
 
-[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.1.0
 [1.0.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.0.0

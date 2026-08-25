@@ -1,9 +1,11 @@
-import { IconBrandGithub, IconHeart, IconWorld } from "@tabler/icons-react";
+import { IconBrandGithub, IconHeart } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { APP_VERSION } from "../../lib/app-meta.ts";
 import { BrandWordmark } from "../chrome/brand-mark.tsx";
+import { buttonVariants } from "../ui/button.tsx";
 
 const LICENSE_HREF = "https://www.gnu.org/licenses/agpl-3.0.html";
+const AUTHOR_HREF = "https://sims.dev.br";
 
 const TOOLS = [
   {
@@ -50,35 +52,32 @@ export function AboutPanel() {
             GNU AGPLv3
           </a>{t("about.licenseTail")}
         </p>
-        <p>{t("about.creator")}</p>
+        <p>
+          {t("about.creatorLead")}{" "}
+          <a href={AUTHOR_HREF} className="text-accent hover:underline" target="_blank" rel="noreferrer">
+            {t("about.creatorName")}
+          </a>
+          .
+        </p>
       </div>
-      <a
-        href="https://github.com/simstm/amphitheatre"
-        className="inline-flex items-center gap-2 text-sm text-accent hover:underline"
-        target="_blank"
-        rel="noreferrer"
-      >
-        <IconBrandGithub className="size-4" aria-hidden="true" />
-        {t("about.github")}
-      </a>
       <div className="flex flex-wrap items-center justify-center gap-2">
         <a
-          href="https://buymeacoffee.com/simstm"
-          className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-accent px-4 text-sm font-semibold text-ink-on-accent hover:bg-accent-hover"
+          href="https://github.com/simstm/amphitheatre"
+          className={buttonVariants({ variant: "secondary", size: "touch" })}
           target="_blank"
           rel="noreferrer"
         >
-          <IconHeart className="size-4" aria-hidden="true" />
-          {t("about.coffee")}
+          <IconBrandGithub aria-hidden="true" />
+          {t("about.github")}
         </a>
         <a
-          href="https://sims.dev.br"
-          className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-border px-4 text-sm font-semibold text-ink hover:bg-surface-sunken"
+          href="https://buymeacoffee.com/simstm"
+          className={buttonVariants({ variant: "primary", size: "touch" })}
           target="_blank"
           rel="noreferrer"
         >
-          <IconWorld className="size-4" aria-hidden="true" />
-          {t("about.portfolio")}
+          <IconHeart aria-hidden="true" />
+          {t("about.coffee")}
         </a>
       </div>
       <div className="w-full">

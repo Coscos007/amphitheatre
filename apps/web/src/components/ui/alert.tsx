@@ -23,7 +23,7 @@ export function Alert({ tone = "info", title, children, className }: AlertProps)
       )}
     >
       <Icon className="mt-0.5 size-5 shrink-0 text-ink" aria-hidden="true" />
-      <div>
+      <div className="min-w-0">
         <p className="font-medium text-ink">{title}</p>
         {children ? <p className="mt-1 text-sm text-ink-muted">{children}</p> : null}
       </div>

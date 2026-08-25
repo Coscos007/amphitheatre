@@ -1,5 +1,7 @@
 # Changes — 2026-08-24
 
+* [Mobile Home and room chrome](mobile-theater-chrome/mobile-theater-chrome.md) - compact header; bottom dock; expanding offline card; microphone test loopback
+
 * [LiveKit remote audio and screen-share sound](livekit-audio-playback/livekit-audio-playback.md) - attach remote audio tracks; Chromium tab/system audio on screen share
 * [OME REST access token in Compose](ome-api-access-token/ome-api-access-token.md) - inject `OME_API_ACCESS_TOKEN` into the OME container so stream status polling is not 401
 * [Self-hosting, single Docker image, and release automation](self-hosting-docker-release/self-hosting-docker-release.md) - human-readable README/guide; deploy/ Compose stack; Dockerfile; PUBLIC_*_HOSTNAME; CHANGELOG.md; tag-triggered Docker Hub release

@@ -15,9 +15,9 @@ sources:
   - id: workflow
     resource: .github/workflows/release.yml
     title: Release workflow
-  - id: script
-    resource: scripts/extract-changelog.sh
-    title: Changelog section extractor
+  - id: app-meta
+    resource: apps/web/src/lib/app-meta.ts
+    title: APP_VERSION from root package.json
 ---
 
 # Rule
@@ -27,7 +27,7 @@ Every feature or fix gets a bullet under `## [Unreleased]` in the root `CHANGELO
 Releasing a new version is a **manual** flow, never automatic on merge to `main`:
 
 1. Run `scripts/extract-changelog.sh promote X.Y.Z` to move `[Unreleased]`'s content into a new `## [X.Y.Z] - YYYY-MM-DD` section (leaves `[Unreleased]` empty above it and refreshes the link references at the bottom).
-2. Bump `version` in the root `package.json` to match.
+2. Bump `version` in the root `package.json` to match. Settings → About reads that value at Vite build (`__APP_VERSION__`); do not hardcode a different string in the SPA.
 3. `git tag vX.Y.Z && git push --tags`.
 4. `.github/workflows/release.yml` extracts that version's section (`scripts/extract-changelog.sh`) to create the GitHub Release (always English), then builds and pushes a multi-arch (`linux/amd64` + `linux/arm64`) image to Docker Hub as `simstosh/amphitheatre:vX.Y.Z`, `:X.Y`, and `:latest`.
 

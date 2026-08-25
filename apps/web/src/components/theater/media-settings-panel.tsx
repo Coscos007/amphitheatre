@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { MediaDeviceKindName } from "../../hooks/use-livekit.ts";
 import { readDevicePrefs, writeDevicePrefs } from "../../lib/device-prefs.ts";
-import { cn } from "../../lib/cn.ts";
 import { Field } from "../ui/field.tsx";
 
 type DeviceLists = {
@@ -14,10 +13,14 @@ type DeviceLists = {
 };
 
 type MediaSettingsPanelProps = {
+  active?: boolean;
   listDevices: () => Promise<DeviceLists>;
   switchDevice: (kind: MediaDeviceKindName, deviceId: string) => Promise<void>;
   setOutputVolume: (volume: number) => void;
   setInputVolume: (volume: number) => void;
+  micEnabled?: boolean;
+  micLocked?: boolean;
+  setMic?: (enabled: boolean) => Promise<void>;
 };
 
 function DeviceSelect({
@@ -86,28 +89,45 @@ function VolumeSlider({
   );
 }
 
-function MicMeter({ level, bars = 20 }: { level: number; bars?: number }) {
-  const lit = Math.round(level * bars);
+function MicMeter({ level, active, label }: { level: number; active: boolean; label: string }) {
+  const pct = Math.round(Math.min(1, Math.max(0, level)) * 100);
   return (
-    <div className="flex h-8 flex-1 items-center gap-0.5" aria-hidden="true">
-      {Array.from({ length: bars }, (_, i) => (
-        <span
-          key={i}
-          className={cn(
-            "h-full min-w-0 flex-1 rounded-sm",
-            i < lit ? "bg-accent" : "bg-surface-sunken",
-          )}
+    <div className="flex min-w-0 w-full flex-1 flex-col gap-1.5">
+      <div
+        className="h-3 w-full overflow-hidden rounded-full border border-border bg-surface-page"
+        role="meter"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={active ? pct : 0}
+      >
+        <div
+          className="h-full rounded-full bg-accent transition-[width] duration-75"
+          style={{ width: `${active ? pct : 0}%` }}
         />
-      ))}
+      </div>
     </div>
   );
 }
 
+function rmsLevel(data: Uint8Array): number {
+  let sum = 0;
+  for (const value of data) {
+    const n = (value - 128) / 128;
+    sum += n * n;
+  }
+  return Math.min(1, Math.sqrt(sum / data.length) * 3.25);
+}
+
 export function MediaSettingsPanel({
+  active = true,
   listDevices,
   switchDevice,
   setOutputVolume,
   setInputVolume,
+  micEnabled = false,
+  micLocked = false,
+  setMic,
 }: MediaSettingsPanelProps) {
   const { t } = useTranslation();
   const [devices, setDevices] = useState<DeviceLists>({
@@ -122,14 +142,21 @@ export function MediaSettingsPanel({
   const previewRef = useRef<MediaStream | null>(null);
   const meterRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
+  const playbackRef = useRef<HTMLAudioElement | null>(null);
+  const rafRef = useRef(0);
+  const restoreMicRef = useRef(false);
+  const setMicRef = useRef(setMic);
+  setMicRef.current = setMic;
 
   useEffect(() => {
+    if (!active) return;
     void listDevices()
       .then(setDevices)
       .catch(() => toast.error(t("toast.mediaError")));
-  }, [listDevices, t]);
+  }, [active, listDevices, t]);
 
   useEffect(() => {
+    if (!active) return;
     let cancelled = false;
     const start = async () => {
       try {
@@ -156,16 +183,46 @@ export function MediaSettingsPanel({
       previewRef.current?.getTracks().forEach((track) => track.stop());
       previewRef.current = null;
     };
-  }, [prefs.audioinput, prefs.videoinput, t]);
+  }, [active, prefs.audioinput, prefs.videoinput, t]);
+
+  const stopMicTest = async (restore: boolean) => {
+    window.cancelAnimationFrame(rafRef.current);
+    const playback = playbackRef.current;
+    if (playback) {
+      playback.pause();
+      playback.srcObject = null;
+      playbackRef.current = null;
+    }
+    const ctx = meterRef.current;
+    meterRef.current = null;
+    gainRef.current = null;
+    if (ctx) void ctx.close();
+    setLevel(0);
+    setTesting(false);
+    if (restore && restoreMicRef.current) {
+      restoreMicRef.current = false;
+      await setMicRef.current?.(true);
+    } else {
+      restoreMicRef.current = false;
+    }
+  };
 
   useEffect(() => {
     return () => {
-      void meterRef.current?.close();
+      void stopMicTest(true);
     };
+    // Unmount / leave devices tab must always restore the room mic.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (!active) void stopMicTest(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  useEffect(() => {
     if (gainRef.current) gainRef.current.gain.value = prefs.inputVolume;
+    if (playbackRef.current) playbackRef.current.volume = prefs.inputVolume;
   }, [prefs.inputVolume]);
 
   const persist = (next: typeof prefs) => {
@@ -194,99 +251,152 @@ export function MediaSettingsPanel({
 
   const testMic = async () => {
     if (testing) {
-      setTesting(false);
-      void meterRef.current?.close();
-      meterRef.current = null;
-      gainRef.current = null;
-      setLevel(0);
+      await stopMicTest(true);
       return;
     }
-    const track = previewRef.current?.getAudioTracks()[0];
+    let track = previewRef.current?.getAudioTracks().find((item) => item.readyState === "live");
     if (!track) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: prefs.audioinput ? { deviceId: { exact: prefs.audioinput } } : true,
+        });
+        const next = stream.getAudioTracks()[0];
+        if (!next) {
+          stream.getTracks().forEach((item) => item.stop());
+          toast.error(t("toast.mediaError"));
+          return;
+        }
+        track = next;
+        const preview = previewRef.current;
+        if (preview) {
+          for (const extra of stream.getAudioTracks()) preview.addTrack(extra);
+        } else {
+          previewRef.current = stream;
+        }
+      } catch {
+        toast.error(t("toast.mediaError"));
+        return;
+      }
+    }
+
+    restoreMicRef.current = Boolean(micEnabled && !micLocked && setMicRef.current);
+    if (restoreMicRef.current) {
+      try {
+        await setMicRef.current?.(false);
+      } catch {
+        restoreMicRef.current = false;
+      }
+    }
+
+    const AudioCtx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) {
       toast.error(t("toast.mediaError"));
+      if (restoreMicRef.current) {
+        restoreMicRef.current = false;
+        await setMicRef.current?.(true);
+      }
       return;
     }
-    const ctx = new AudioContext();
+
+    const ctx = new AudioCtx();
     meterRef.current = ctx;
+    await ctx.resume().catch(() => undefined);
     const source = ctx.createMediaStreamSource(new MediaStream([track]));
     const gain = ctx.createGain();
     gain.gain.value = prefs.inputVolume;
     gainRef.current = gain;
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
+    analyser.fftSize = 1024;
     source.connect(gain);
     gain.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    const playback = new Audio();
+    playback.srcObject = new MediaStream([track]);
+    playback.volume = prefs.inputVolume;
+    playbackRef.current = playback;
+    try {
+      await playback.play();
+    } catch {
+      /* autoplay; meter still runs */
+    }
+
+    const data = new Uint8Array(analyser.fftSize);
     setTesting(true);
     const loop = () => {
       if (!meterRef.current) return;
-      analyser.getByteFrequencyData(data);
-      const avg = data.reduce((sum, n) => sum + n, 0) / data.length / 255;
-      setLevel(avg);
-      requestAnimationFrame(loop);
+      analyser.getByteTimeDomainData(data);
+      setLevel(rmsLevel(data));
+      rafRef.current = requestAnimationFrame(loop);
     };
     loop();
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <DeviceSelect
-          id="audio-input"
-          label={t("settings.audioInput")}
-          icon={<IconMicrophone className="size-4" />}
-          value={prefs.audioinput ?? devices.audioinput[0]?.deviceId ?? ""}
-          options={devices.audioinput}
-          onChange={(value) => void onDevice("audioinput", value)}
-        />
-        <VolumeSlider
-          id="input-volume"
-          label={t("settings.inputVolume")}
-          value={prefs.inputVolume}
-          onChange={onInputVolume}
-        />
-      </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <button
-          type="button"
-          className="label-caps min-h-11 shrink-0 rounded-[var(--radius-control)] bg-accent px-4 text-ink-on-accent hover:bg-accent-hover"
-          onClick={() => void testMic()}
-          aria-pressed={testing}
-        >
-          {testing ? t("settings.stopMicTest") : t("settings.testMic")}
-        </button>
-        <MicMeter level={testing ? level : 0} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <DeviceSelect
-          id="audio-output"
-          label={t("settings.audioOutput")}
-          icon={<IconHeadphones className="size-4" />}
-          value={prefs.audiooutput ?? devices.audiooutput[0]?.deviceId ?? ""}
-          options={devices.audiooutput}
-          onChange={(value) => void onDevice("audiooutput", value)}
-        />
-        <VolumeSlider
-          id="output-volume"
-          label={t("settings.outputVolume")}
-          value={prefs.outputVolume}
-          onChange={onOutputVolume}
-        />
-      </div>
-      <DeviceSelect
-        id="video-input"
-        label={t("settings.videoInput")}
-        icon={<IconVideo className="size-4" />}
-        value={prefs.videoinput ?? devices.videoinput[0]?.deviceId ?? ""}
-        options={devices.videoinput}
-        onChange={(value) => void onDevice("videoinput", value)}
-      />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="overflow-hidden rounded-[var(--radius-panel)] border border-border bg-black">
-          <video ref={videoRef} className="aspect-video h-auto w-full object-cover" muted playsInline />
+    <div className="flex flex-col gap-8">
+      <section className="grid gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
+        <div className="flex flex-col gap-4">
+          <DeviceSelect
+            id="audio-input"
+            label={t("settings.audioInput")}
+            icon={<IconMicrophone className="size-4" />}
+            value={prefs.audioinput ?? devices.audioinput[0]?.deviceId ?? ""}
+            options={devices.audioinput}
+            onChange={(value) => void onDevice("audioinput", value)}
+          />
+          <VolumeSlider
+            id="input-volume"
+            label={t("settings.inputVolume")}
+            value={prefs.inputVolume}
+            onChange={onInputVolume}
+          />
         </div>
-        <p className="self-center text-sm text-ink-muted">{t("settings.previewHint")}</p>
-      </div>
+        <div className="flex flex-col gap-4">
+          <DeviceSelect
+            id="audio-output"
+            label={t("settings.audioOutput")}
+            icon={<IconHeadphones className="size-4" />}
+            value={prefs.audiooutput ?? devices.audiooutput[0]?.deviceId ?? ""}
+            options={devices.audiooutput}
+            onChange={(value) => void onDevice("audiooutput", value)}
+          />
+          <VolumeSlider
+            id="output-volume"
+            label={t("settings.outputVolume")}
+            value={prefs.outputVolume}
+            onChange={onOutputVolume}
+          />
+        </div>
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="label-caps min-h-11 shrink-0 rounded-[var(--radius-control)] bg-accent px-4 text-ink-on-accent hover:bg-accent-hover"
+              onClick={() => void testMic()}
+              aria-pressed={testing}
+            >
+              {testing ? t("settings.stopMicTest") : t("settings.testMic")}
+            </button>
+            <MicMeter level={testing ? level : 0} active={testing} label={t("settings.micMeter")} />
+          </div>
+          <p className="text-xs text-ink-muted">{t("settings.micTestHint")}</p>
+        </div>
+      </section>
+      <section className="flex flex-col gap-4">
+        <DeviceSelect
+          id="video-input"
+          label={t("settings.videoInput")}
+          icon={<IconVideo className="size-4" />}
+          value={prefs.videoinput ?? devices.videoinput[0]?.deviceId ?? ""}
+          options={devices.videoinput}
+          onChange={(value) => void onDevice("videoinput", value)}
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="overflow-hidden rounded-[var(--radius-panel)] border border-border bg-black">
+            <video ref={videoRef} className="aspect-video h-auto w-full object-cover" muted playsInline />
+          </div>
+          <p className="self-center text-sm text-ink-muted">{t("settings.previewHint")}</p>
+        </div>
+      </section>
     </div>
   );
 }

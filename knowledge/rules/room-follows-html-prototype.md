@@ -19,9 +19,9 @@ sources:
 
 # Rule
 
-The `/rooms/$roomId` route on desktop must stay visually close to `room.html` / `room-chat.html`: floating header (mark + Amphitheatre + name + status pill), `rounded-2xl` stage with empty state “the stage is yours”, 340px aside with Audience/Chat tabs.
+The `/rooms/$roomId` route on desktop must stay visually close to `room.html` / `room-chat.html`: floating header (mark + Amphitheatre + name + status pill), `rounded-2xl` stage with empty state “the stage is yours” **centered horizontally and vertically** in the stage frame, 340px aside with Audience/Chat tabs.
 
-The media dock sits **in the header, centered** (not over the stage). Settings, theme, and locale sit on the right, with tooltip. Tile title and pin sit at the top and only appear on hover (they disappear 3s after the mouse leaves).
+The media dock sits **in the header, centered** (not over the stage). The right side of the header is Settings only (theme and locale are the General tab inside Settings). Tile title and pin sit at the top and only appear on hover (they disappear 3s after the mouse leaves).
 
 HTML is dark-only; the SPA keeps light and dark via tokens. No emoji. Tabler icons in place of Material Symbols.
 

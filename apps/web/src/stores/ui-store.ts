@@ -20,6 +20,8 @@ type UiState = {
 
 function applyTheme(theme: ThemeMode) {
   document.documentElement.dataset.theme = theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#1b110a" : "#f6ebe3");
 }
 
 function migrateLegacyLocale() {

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { canShareScreen } from "../../hooks/use-media.ts";
 import { cn } from "../../lib/cn.ts";
+import { canShareInvite, shareOrCopyInvite } from "../../lib/share-invite.ts";
 import { Alert } from "../ui/alert.tsx";
 
 type ControlBarProps = {
@@ -52,13 +53,13 @@ function DockButton({
     <button
       type="button"
       aria-pressed={pressed}
-      aria-label={compact ? (title ?? label) : undefined}
+      aria-label={title ?? label}
       disabled={disabled}
       title={title}
       onClick={onClick}
       className={cn(
-        "flex min-h-11 flex-col items-center gap-1 rounded-xl py-2 text-ink-muted",
-        compact ? "min-w-11 px-1.5" : "min-w-16 px-2",
+        "flex items-center justify-center rounded-xl text-ink-muted",
+        compact ? "relative h-12 min-h-12 min-w-0 flex-1 px-0" : "min-h-11 min-w-16 flex-col gap-1 px-2 py-2",
         "hover:bg-surface-sunken hover:text-accent",
         "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
         "disabled:pointer-events-none disabled:opacity-50",
@@ -73,6 +74,7 @@ function DockButton({
 }
 
 export function ControlBar({
+  roomName,
   roomId,
   micEnabled,
   cameraEnabled,
@@ -87,22 +89,26 @@ export function ControlBar({
 }: ControlBarProps) {
   const { t } = useTranslation();
   const shareOk = canShareScreen();
+  const iconClass = compact ? "size-6" : "size-5";
 
-  const copyInvite = async () => {
+  const invite = async () => {
     const url = `${window.location.origin}/rooms/${roomId}`;
+    const name = roomName.trim() || t("join.untitled");
+    const title = t("theater.shareInviteTitle", { name });
+    const text = t("theater.shareInviteText", { name, url });
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("toast.copied"));
+      const result = await shareOrCopyInvite({ title, text, url });
+      if (result === "copied") toast.success(t("toast.copied"));
     } catch {
       toast.error(t("toast.copyFailed"));
     }
   };
 
   return (
-    <div className={cn("flex flex-col items-center gap-2", compact && "w-full max-w-full")}>
+    <div className={cn("flex flex-col items-center gap-2", compact && "w-full")}>
       {livekitUnavailable ? <Alert title={t("theater.livekitDown")} /> : null}
       <div
-        className={cn("dock max-w-full", compact && "flex-wrap justify-center")}
+        className={cn("dock", compact ? "dock-footer w-full" : "max-w-full")}
         role="toolbar"
         aria-label={t("a11y.controlsRegion")}
       >
@@ -114,7 +120,7 @@ export function ControlBar({
           title={micLocked ? t("theater.mutedLocked") : micEnabled ? t("theater.micOn") : t("theater.micOff")}
           onClick={() => void onMic(!micEnabled)}
         >
-          {micEnabled ? <IconMicrophone className="size-5" aria-hidden="true" /> : <IconMicrophoneOff className="size-5" aria-hidden="true" />}
+          {micEnabled ? <IconMicrophone className={iconClass} aria-hidden="true" /> : <IconMicrophoneOff className={iconClass} aria-hidden="true" />}
         </DockButton>
         <DockButton
           compact={compact}
@@ -124,9 +130,9 @@ export function ControlBar({
           title={cameraEnabled ? t("theater.camOn") : t("theater.camOff")}
           onClick={() => void onCamera(!cameraEnabled)}
         >
-          {cameraEnabled ? <IconVideo className="size-5" aria-hidden="true" /> : <IconVideoOff className="size-5" aria-hidden="true" />}
+          {cameraEnabled ? <IconVideo className={iconClass} aria-hidden="true" /> : <IconVideoOff className={iconClass} aria-hidden="true" />}
         </DockButton>
-        <span className="mx-1 h-8 w-px bg-border" aria-hidden="true" />
+        <span className="mx-0.5 h-8 w-px shrink-0 bg-border" aria-hidden="true" />
         <DockButton
           compact={compact}
           label={t("theater.dockShare")}
@@ -141,14 +147,19 @@ export function ControlBar({
           }
           onClick={() => void onScreen(!screenEnabled)}
         >
-          <IconScreenShare className="size-5" aria-hidden="true" />
+          <IconScreenShare className={iconClass} aria-hidden="true" />
         </DockButton>
-        <span className="mx-1 h-8 w-px bg-border" aria-hidden="true" />
-        <DockButton compact={compact} label={t("theater.dockInvite")} title={t("theater.copyInvite")} onClick={() => void copyInvite()}>
-          <IconUserPlus className="size-5" aria-hidden="true" />
+        <span className="mx-0.5 h-8 w-px shrink-0 bg-border" aria-hidden="true" />
+        <DockButton
+          compact={compact}
+          label={t("theater.dockInvite")}
+          title={canShareInvite() ? t("theater.shareInvite") : t("theater.copyInvite")}
+          onClick={() => void invite()}
+        >
+          <IconUserPlus className={iconClass} aria-hidden="true" />
         </DockButton>
         <DockButton compact={compact} label={t("theater.dockLeave")} danger title={t("theater.leave")} onClick={onLeave}>
-          <IconLogout className="size-5" aria-hidden="true" />
+          <IconLogout className={iconClass} aria-hidden="true" />
         </DockButton>
       </div>
     </div>

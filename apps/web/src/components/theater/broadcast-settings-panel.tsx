@@ -71,7 +71,7 @@ export function BroadcastSettingsPanel({ roomId, broadcast, ingest, active }: Br
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <label className="flex items-start gap-3 text-sm text-ink">
         <input
           type="checkbox"
@@ -119,17 +119,17 @@ export function BroadcastSettingsPanel({ roomId, broadcast, ingest, active }: Br
           ) : ingest ? (
             <div className="space-y-3 rounded-[var(--radius-panel)] border border-border bg-surface-sunken p-3">
               <Field id="rtmp-url" label={t("settings.rtmpUrl")} hint={t("theater.ingestHint")}>
-                <div className="flex gap-2">
-                  <Input id="rtmp-url" readOnly value={ingest.rtmpUrl} />
-                  <Button variant="secondary" onClick={() => void copy(ingest.rtmpUrl)}>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input id="rtmp-url" readOnly value={ingest.rtmpUrl} className="min-w-0" />
+                  <Button variant="secondary" className="w-full shrink-0 sm:w-auto" onClick={() => void copy(ingest.rtmpUrl)}>
                     {t("app.copy")}
                   </Button>
                 </div>
               </Field>
               <Field id="stream-key" label={t("settings.streamKey")} hint={t("settings.streamKeyHint")}>
-                <div className="flex gap-2">
-                  <Input id="stream-key" readOnly value={ingest.streamKey} />
-                  <Button variant="secondary" onClick={() => void copy(ingest.streamKey)}>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input id="stream-key" readOnly value={ingest.streamKey} className="min-w-0" />
+                  <Button variant="secondary" className="w-full shrink-0 sm:w-auto" onClick={() => void copy(ingest.streamKey)}>
                     {t("app.copy")}
                   </Button>
                 </div>
@@ -143,8 +143,8 @@ export function BroadcastSettingsPanel({ roomId, broadcast, ingest, active }: Br
           )}
         </>
       ) : null}
-      <div className="flex justify-end">
-        <Button onClick={() => void save(false)} loading={busy}>
+      <div className="flex justify-stretch sm:justify-end">
+        <Button className="w-full sm:w-auto" onClick={() => void save(false)} loading={busy}>
           {t("settings.saveBroadcast")}
         </Button>
       </div>

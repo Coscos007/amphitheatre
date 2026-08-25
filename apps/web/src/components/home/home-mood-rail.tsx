@@ -11,8 +11,8 @@ export function HomeMoodRail() {
   ] as const;
 
   return (
-    <div className="mt-4">
-      <div className="flex gap-3 overflow-visible pt-1 pb-10">
+    <div className="mt-4 w-full">
+      <div className="flex justify-center gap-3 overflow-visible pt-1 pb-10 xl:justify-start">
         {items.map((item) => (
           <div
             key={item.id}

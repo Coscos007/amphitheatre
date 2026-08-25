@@ -15,6 +15,21 @@ describe("normalizeBroadcastEmbed", () => {
         "localhost:5173",
       ),
     ).toContain("parent=localhost");
+    expect(
+      broadcastIframeSrc(
+        { enabled: true, provider: "youtube", embed: "dQw4w9wgGcQ" },
+        "localhost:5173",
+      ),
+    ).toBe("https://www.youtube-nocookie.com/embed/dQw4w9wgGcQ?autoplay=1&rel=0");
+  });
+});
+
+describe("security headers", () => {
+  test("Referrer-Policy still sends origin so YouTube embeds can load", async () => {
+    const { app } = makeApp();
+    const res = await app.request("/health");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
   });
 });
 

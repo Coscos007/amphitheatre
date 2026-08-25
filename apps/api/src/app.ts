@@ -51,7 +51,11 @@ export function createApp(deps: AppDeps): CreatedApp {
 
   app.use("*", async (c, next) => {
     if (c.req.path.endsWith("/ws")) return next();
-    return secureHeaders()(c, next);
+    // YouTube (and other) embeds need a cross-origin Referer. Hono's default
+    // is no-referrer, which surfaces as Error 153 / "HTTP Referer".
+    return secureHeaders({
+      referrerPolicy: "strict-origin-when-cross-origin",
+    })(c, next);
   });
 
   app.use("*", async (c, next) => {
@@ -87,6 +91,16 @@ function serveWebBuildIfPresent(app: Hono<AppBindings>): void {
 
   const isApiPath = (path: string) =>
     path.startsWith("/api") || path.startsWith("/webhooks") || path === "/health";
+
+  app.use("/sw.js", async (c, next) => {
+    await next();
+    c.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    c.header("Service-Worker-Allowed", "/");
+  });
+  app.use("/manifest.webmanifest", async (c, next) => {
+    await next();
+    c.header("Content-Type", "application/manifest+json; charset=utf-8");
+  });
 
   app.use("*", async (c, next) => {
     if (isApiPath(c.req.path)) return next();

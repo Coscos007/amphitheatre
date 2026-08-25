@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { broadcastIframeSrc, type RoomBroadcast } from "@coliseum/shared";
 import type { OmeInfo } from "../../shared-types.ts";
 import { useOmePlayer } from "../../hooks/use-ome-player.ts";
-import { omePlayerSources } from "../../lib/ome-playback.ts";
+import { hasOmePlayback, omePlayerSources } from "../../lib/ome-playback.ts";
+import { cn } from "../../lib/cn.ts";
 import { Alert } from "../ui/alert.tsx";
 import { Button } from "../ui/button.tsx";
 
@@ -15,12 +16,6 @@ type BroadcastPaneProps = {
 };
 
 const MIN_BOX = 8;
-
-function withEmbedOrigin(src: string, provider: RoomBroadcast["provider"]): string {
-  if (provider !== "youtube") return src;
-  const origin = encodeURIComponent(window.location.origin);
-  return src.includes("origin=") ? src : `${src}&origin=${origin}`;
-}
 
 function BroadcastEmbed({ src, title }: { src: string; title: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -56,7 +51,9 @@ function BroadcastEmbed({ src, title }: { src: string; title: string }) {
           title={title}
           src={src}
           className="h-full w-full border-0"
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
         />
       ) : null}
     </div>
@@ -78,11 +75,10 @@ export function BroadcastPane({ broadcast, ome, onReload }: BroadcastPaneProps) 
   );
   const { containerRef, failed } = useOmePlayer(sources, generation);
   const omeLive = sources.length > 0;
-  const rawEmbed =
+  const embedSrc =
     broadcast.enabled && broadcast.provider !== "ome"
       ? broadcastIframeSrc(broadcast, window.location.hostname)
       : null;
-  const embedSrc = rawEmbed ? withEmbedOrigin(rawEmbed, broadcast.provider) : null;
   const retry = () => {
     if (onReload) onReload();
     else setGeneration((value) => value + 1);
@@ -117,27 +113,44 @@ export function BroadcastPane({ broadcast, ome, onReload }: BroadcastPaneProps) 
     );
   }
 
+  return <BroadcastOfflineCard ome={ome} />;
+}
+
+export function BroadcastOfflineCard({ ome, className }: { ome: OmeInfo | null; className?: string }) {
+  const { t } = useTranslation();
+  if (ome?.reachable && !ome.healthy) {
+    return (
+      <Alert tone="warning" title={t("theater.omeDownTitle")} className={cn("w-full min-w-0", className)}>
+        {t("theater.omeDownBody")}
+      </Alert>
+    );
+  }
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 bg-black/40 p-6 text-center">
-      <span className="flex size-14 items-center justify-center rounded-full border border-border bg-surface-sunken">
-        <IconBroadcast className="size-7 text-ink-subtle" aria-hidden="true" />
-      </span>
-      {ome?.reachable && !ome.healthy ? (
-        <Alert tone="warning" title={t("theater.omeDownTitle")}>
-          {t("theater.omeDownBody")}
-        </Alert>
-      ) : (
-        <>
-          <p className="font-display text-lg text-ink">{t("theater.broadcastWaiting")}</p>
-          <p className="max-w-[32ch] text-sm text-ink-muted">{t("theater.broadcastWaitingBody")}</p>
-        </>
+    <div
+      className={cn(
+        "flex w-full min-w-0 gap-3 rounded-[var(--radius-panel)] border border-border bg-surface-raised p-4 text-left",
+        className,
       )}
+    >
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface-sunken">
+        <IconBroadcast className="size-5 text-ink-subtle" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="font-display text-base text-ink">{t("theater.broadcastWaiting")}</p>
+        <p className="mt-1 text-sm text-ink-muted">{t("theater.broadcastWaitingBody")}</p>
+      </div>
     </div>
   );
 }
 
-export function hasBroadcastSurface(broadcast: RoomBroadcast): boolean {
+export function hasBroadcastPlayback(broadcast: RoomBroadcast, ome: OmeInfo | null): boolean {
+  if (!broadcast.enabled) return false;
+  if (broadcast.provider === "ome") return hasOmePlayback(ome);
+  return Boolean(broadcast.embed);
+}
+
+export function hasBroadcastSurface(broadcast: RoomBroadcast, ome: OmeInfo | null = null): boolean {
   if (!broadcast.enabled) return false;
   if (broadcast.provider === "ome") return true;
-  return Boolean(broadcast.embed);
+  return Boolean(broadcast.embed) || hasBroadcastPlayback(broadcast, ome);
 }

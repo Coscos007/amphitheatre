@@ -1,6 +1,24 @@
 # Directory update log
 
+## 2026-08-25
+
+* **Creation**: Installable PWA (manifest, production SW, `#2e1b08` icon canvas), compact Home install banner, Install as app in the hamburger and General settings, locale-aware Web Share for Invite, Open Graph `summary_large_image`. Rule [pwa-and-native-share](/rules/pwa-and-native-share.md). Change: [pwa-share-meta](/changes/2026-08-25/pwa-share-meta/pwa-share-meta.md).
+
+* **Fix**: YouTube stage embed Error 153 — Hono `Referrer-Policy` is `strict-origin-when-cross-origin` (not `no-referrer`); iframe and HTML meta match; no `origin=` on the plain iframe. Rule [broadcast-opt-in](/rules/broadcast-opt-in.md). Change: [youtube-embed-referrer](/changes/2026-08-25/youtube-embed-referrer/youtube-embed-referrer.md).
+
+* **Update**: About — author name links to sims.dev.br; GitHub is an outline button; Buy me a coffee is the filled primary; Portfolio button removed. Rule [theater-header-chrome](/rules/theater-header-chrome.md). Change: [about-author-link](/changes/2026-08-25/about-author-link/about-author-link.md).
+
+* **Update**: Settings chrome — tighter flood-pause spacing; Discord two-column Devices; About version from root `package.json`; mobile title left / broadcast badge right; Audience/Chat tabs inside the drawer card. Rules [theater-header-chrome](/rules/theater-header-chrome.md), [mobile-first-class-separate-layout](/rules/mobile-first-class-separate-layout.md), [changelog-and-release-process](/rules/changelog-and-release-process.md). Change: [settings-chrome-about-version](/changes/2026-08-25/settings-chrome-about-version/settings-chrome-about-version.md).
+
+* **Update**: Room QOL — Settings-only header; General tab for theme/locale; unread chat badge and `(n)` title; mobile Settings fullscreen; Audience/Chat bottom drawer; Meet-style mobile camera grid. Rules [theater-header-chrome](/rules/theater-header-chrome.md), [mobile-first-class-separate-layout](/rules/mobile-first-class-separate-layout.md), [stage-pin-grid](/rules/stage-pin-grid.md). Change: [theater-qol-settings-chat-drawer](/changes/2026-08-25/theater-qol-settings-chat-drawer/theater-qol-settings-chat-drawer.md).
+
+* **Update**: Desktop empty stage copy is centered in the stage frame. Rules [room-follows-html-prototype](/rules/room-follows-html-prototype.md) and [theater-header-chrome](/rules/theater-header-chrome.md). Change: [center-empty-desktop-stage](/changes/2026-08-25/center-empty-desktop-stage/center-empty-desktop-stage.md).
+
+* **Update**: Home compact chrome — centered hero; join/create tabs (join first); hamburger opens a fullscreen appearance sheet; guest avatar lives inside that sheet. Rules [home-follows-html-prototype](/rules/home-follows-html-prototype.md), [theater-header-chrome](/rules/theater-header-chrome.md), [mobile-first-class-separate-layout](/rules/mobile-first-class-separate-layout.md). Change: [home-compact-tabs-appearance-sheet](/changes/2026-08-25/home-compact-tabs-appearance-sheet/home-compact-tabs-appearance-sheet.md).
+
 ## 2026-08-24
+
+* **Update**: Mobile Home and room chrome — hamburger for theme/locale, full-width bottom dock, expanding offline broadcast card, microphone test with self-listen and mute restore. Rules [mobile-first-class-separate-layout](/rules/mobile-first-class-separate-layout.md) and [theater-header-chrome](/rules/theater-header-chrome.md). Change: [mobile-theater-chrome](/changes/2026-08-24/mobile-theater-chrome/mobile-theater-chrome.md).
 
 * **Fix**: Remote LiveKit microphone and screen-share audio now attach and unlock autoplay; screen share can include tab or system audio in Chromium. Rule [livekit-remote-audio-must-play](/rules/livekit-remote-audio-must-play.md). Change: [livekit-audio-playback](/changes/2026-08-24/livekit-audio-playback/livekit-audio-playback.md).
 

@@ -31,7 +31,7 @@ The OME stream key is `{roomId}-{secret}`. **Do not** use `roomId` alone (8 publ
 
 The OME REST poll and the player only run when `broadcast.enabled` and the provider is `ome`. Embeds do not require OME.
 
-Twitch/YouTube/Kick/custom iframes **wait for the stage box** before mounting, remount on persisted `pageshow` (bfcache), and have a reload control. YouTube: page `origin`; no `sandbox` (it breaks the embed on SPA navigation). Custom https may stay more restricted if the code requires it.
+Twitch/YouTube/Kick/custom iframes **wait for the stage box** before mounting, remount on persisted `pageshow` (bfcache), and have a reload control. YouTube iframe: `referrerpolicy="strict-origin-when-cross-origin"`; **no** `sandbox` (it breaks the embed on SPA navigation); **no** `origin=` query param on a plain iframe (that belongs to the IFrame Player API and can make the player unavailable). The document must send a cross-origin `Referer` — Hono `secureHeaders` defaults to `no-referrer`, which YouTube rejects as Error 153; override to `strict-origin-when-cross-origin` (and the same value in the HTML `referrer` meta for Vite). Custom https may stay more restricted if the code requires it.
 
 # Related
 
