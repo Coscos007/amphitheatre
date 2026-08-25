@@ -98,7 +98,7 @@
 			</Names>
 		</Host>
 		<API>
-			<AccessToken>change-me</AccessToken>
+			<AccessToken>${env:OME_API_ACCESS_TOKEN:change-me}</AccessToken>
 			<CrossDomains>
 				<Url>*</Url>
 			</CrossDomains>

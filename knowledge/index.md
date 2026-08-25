@@ -35,6 +35,7 @@ Rules the agent must apply when writing code.
 * [Reconnect last priority](rules/reconnect-last-priority.md) - SDK defaults; no custom protocol
 * [Password lockout 3 strikes 5 min](rules/password-lockout-3-strikes-5-min.md) - lockout by IP and userId
 * [Presence indicators required](rules/presence-indicators-required.md) - speaking, transmitting, quality
+* [LiveKit remote audio must play](rules/livekit-remote-audio-must-play.md) - attach remote mic and screen-share audio; autoplay unlock
 * [Mobile first-class separate layout](rules/mobile-first-class-separate-layout.md) - own layout, not a shrunk desktop
 * [Self-aware knowledge](rules/self-aware-knowledge.md) - a durable preference becomes a catalog rule
 * [Shared types in packages/shared](rules/shared-types-in-packages-shared.md) - single contract
@@ -61,7 +62,7 @@ Rules the agent must apply when writing code.
 
 What landed in the code, by date. One directory per feature.
 
-* [2026-08-24](changes/2026-08-24/) - InfiniteGrid3D on the Home background; Tabler Icons; browser locale; room rework (pin/grid, broadcast opt-in); QOL header/chat/About/logos; 404 + Leave modal + player reload; full-height stage and horizontal wordmark; settings modal (tabs, AGPLv3 About, reload in chrome); AGPLv3 + ICLA; English README, split docs, and OKF catalog
+* [2026-08-24](changes/2026-08-24/) - InfiniteGrid3D on the Home background; Tabler Icons; browser locale; room rework (pin/grid, broadcast opt-in); QOL header/chat/About/logos; 404 + Leave modal + player reload; full-height stage and horizontal wordmark; settings modal (tabs, AGPLv3 About, reload in chrome); AGPLv3 + ICLA; English README, split docs, and OKF catalog; LiveKit remote audio playback and screen-share sound
 * [2026-08-23](changes/2026-08-23/) - Amphitheatre name; OME ABR + OvenPlayer; Home faithful to HTML; WebRTC on the default playlist (not /llhls); LL-HLS stage; LiveKit/OME/Valkey/Caddy pins; OME XML v0.21
 * [2026-08-22](changes/2026-08-22/) - bootstrap: monorepo, LiveKit/OME infra, API, SPA, load-testing docs, OKF catalog
 

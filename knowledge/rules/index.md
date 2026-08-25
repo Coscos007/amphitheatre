@@ -8,6 +8,7 @@ Code and process rules. The agent must apply them; if the user changes a durable
 * [Reconnect last priority](reconnect-last-priority.md) - SDK defaults
 * [Password lockout 3 strikes 5 min](password-lockout-3-strikes-5-min.md) - 3 failures, 5 minutes
 * [Presence indicators required](presence-indicators-required.md) - speaking, transmitting, quality
+* [LiveKit remote audio must play](livekit-remote-audio-must-play.md) - attach remote audio; screen share can include tab/system sound
 * [Mobile first-class separate layout](mobile-first-class-separate-layout.md) - a layout of its own
 * [Self-aware knowledge](self-aware-knowledge.md) - a durable user preference becomes a file here
 * [Shared types in packages/shared](shared-types-in-packages-shared.md) - single contract

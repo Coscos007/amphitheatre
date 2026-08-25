@@ -81,7 +81,11 @@ export const es: Messages = {
     camOff: "Encender cámara",
     shareOn: "Dejar de compartir",
     shareOff: "Compartir pantalla",
+    shareAudioHint:
+      "Comparte una ventana, una pestaña del navegador o toda la pantalla. En Chromium, marca la casilla para incluir el audio de la pestaña o del sistema.",
     shareUnavailable: "Compartir pantalla no está disponible en este dispositivo",
+    enableAudio: "El navegador bloqueó el sonido hasta que interactúes. Activa el audio para oír a las demás personas.",
+    enableAudioAction: "Activar audio",
     mutedLocked: "Un moderador te silenció en esta sala",
     livekitDown:
       "Voz y cámara no están disponibles ahora. El chat sigue funcionando.",

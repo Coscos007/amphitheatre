@@ -15,8 +15,33 @@ import { toast } from "sonner";
 import { getLivekitToken } from "../lib/api.ts";
 import { readDevicePrefs } from "../lib/device-prefs.ts";
 import i18n from "../lib/i18n.ts";
+import {
+  attachRemoteAudio,
+  detachRemoteAudio,
+  isDisplayMediaCancelled,
+  isRemoteAudioTrack,
+  SCREEN_SHARE_CAPTURE_OPTIONS,
+} from "../lib/livekit-media.ts";
 import type { ParticipantMedia } from "../shared-types.ts";
 import { useRoomStore } from "../stores/room-store.ts";
+
+const AUDIO_BLOCKED_TOAST = "livekit-audio-blocked";
+
+async function unlockPlayback(room: Room): Promise<void> {
+  try {
+    await room.startAudio();
+  } catch {
+    /* browser autoplay policy; toast + next gesture retry */
+  }
+}
+
+function detachAllRemoteAudio(room: Room): void {
+  room.remoteParticipants.forEach((participant) => {
+    participant.audioTrackPublications.forEach((pub) => {
+      if (pub.track) detachRemoteAudio(pub.track);
+    });
+  });
+}
 
 export type MediaDeviceKindName = "audioinput" | "audiooutput" | "videoinput";
 
@@ -80,6 +105,7 @@ async function applySavedDevices(room: Room) {
 
 function applyInputVolume(room: Room, volume: number) {
   room.localParticipant.audioTrackPublications.forEach((pub) => {
+    if (pub.source !== Track.Source.Microphone) return;
     const track = pub.audioTrack as { setVolume?: (next: number) => void } | null;
     track?.setVolume?.(volume);
   });
@@ -140,6 +166,7 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
     const room = new Room({
       adaptiveStream: true,
       dynacast: true,
+      webAudioMix: true,
     });
     roomRef.current = room;
     let stopped = false;
@@ -147,23 +174,29 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
     store.setLivekitStatus("connecting");
 
     const onMedia = (
-      _track: RemoteTrack,
+      track: RemoteTrack,
       publication: RemoteTrackPublication,
       participant: RemoteParticipant,
     ) => {
       syncParticipant(participant);
+      if (isRemoteAudioTrack(track)) {
+        attachRemoteAudio(track);
+        applyRemoteVolume(room, readDevicePrefs().outputVolume);
+        void unlockPlayback(room);
+      }
       if (publication.kind === Track.Kind.Video) {
         const quality = publication.videoQuality;
         if (quality === 0) {
           store.setMedia(participant.identity, { adaptive: true });
         }
-        _track.mediaStreamTrack?.addEventListener("ended", () => refreshTiles(room), { once: true });
+        track.mediaStreamTrack?.addEventListener("ended", () => refreshTiles(room), { once: true });
       }
       refreshTiles(room);
     };
 
     room.on(RoomEvent.TrackSubscribed, onMedia);
-    room.on(RoomEvent.TrackUnsubscribed, (_track, _pub, participant) => {
+    room.on(RoomEvent.TrackUnsubscribed, (track, _pub, participant) => {
+      if (isRemoteAudioTrack(track)) detachRemoteAudio(track);
       syncParticipant(participant);
       refreshTiles(room);
     });
@@ -233,7 +266,26 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
     room.on(RoomEvent.MediaDevicesError, () => {
       toast.error(i18n.t("toast.mediaError"));
     });
+    room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
+      if (room.canPlaybackAudio) {
+        toast.dismiss(AUDIO_BLOCKED_TOAST);
+        return;
+      }
+      toast.message(i18n.t("theater.enableAudio"), {
+        id: AUDIO_BLOCKED_TOAST,
+        duration: Infinity,
+        action: {
+          label: i18n.t("theater.enableAudioAction"),
+          onClick: () => void unlockPlayback(room),
+        },
+      });
+    });
     room.on(RoomEvent.ParticipantConnected, (participant) => syncParticipant(participant));
+
+    const unlockOnGesture = () => {
+      void unlockPlayback(room);
+    };
+    window.addEventListener("pointerdown", unlockOnGesture);
 
     const run = async () => {
       try {
@@ -251,6 +303,7 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
           return;
         }
         store.setLivekitStatus("connected");
+        await unlockPlayback(room);
         await applySavedDevices(room);
         syncParticipant(room.localParticipant);
         room.remoteParticipants.forEach(syncParticipant);
@@ -266,9 +319,12 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
 
     return () => {
       stopped = true;
+      window.removeEventListener("pointerdown", unlockOnGesture);
+      toast.dismiss(AUDIO_BLOCKED_TOAST);
       store.setLivekitStatus("idle");
       store.resetMedia();
       store.setLocalMediaFlags({ micEnabled: false, cameraEnabled: false, screenEnabled: false });
+      detachAllRemoteAudio(room);
       void room.disconnect();
       roomRef.current = null;
       setTiles([]);
@@ -278,6 +334,7 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const setMic = async (enabledMic: boolean) => {
     const room = roomRef.current;
     if (!room) return;
+    await unlockPlayback(room);
     await room.localParticipant.setMicrophoneEnabled(enabledMic);
     if (enabledMic) applyInputVolume(room, readDevicePrefs().inputVolume);
     useRoomStore.getState().setLocalMediaFlags({ micEnabled: enabledMic });
@@ -286,6 +343,7 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const setCamera = async (enabledCam: boolean) => {
     const room = roomRef.current;
     if (!room) return;
+    await unlockPlayback(room);
     await room.localParticipant.setCameraEnabled(enabledCam);
     useRoomStore.getState().setLocalMediaFlags({ cameraEnabled: enabledCam });
     refreshTiles(room);
@@ -294,9 +352,28 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const setScreen = async (enabledShare: boolean) => {
     const room = roomRef.current;
     if (!room) return;
-    await room.localParticipant.setScreenShareEnabled(enabledShare);
-    useRoomStore.getState().setLocalMediaFlags({ screenEnabled: enabledShare });
-    refreshTiles(room);
+    await unlockPlayback(room);
+    try {
+      if (!enabledShare) {
+        await room.localParticipant.setScreenShareEnabled(false);
+      } else {
+        try {
+          await room.localParticipant.setScreenShareEnabled(true, SCREEN_SHARE_CAPTURE_OPTIONS);
+        } catch (err) {
+          if (isDisplayMediaCancelled(err)) throw err;
+          await room.localParticipant.setScreenShareEnabled(true);
+        }
+      }
+    } catch (err) {
+      if (!isDisplayMediaCancelled(err)) {
+        toast.error(i18n.t("toast.mediaError"));
+      }
+    } finally {
+      useRoomStore.getState().setLocalMediaFlags({
+        screenEnabled: room.localParticipant.isScreenShareEnabled,
+      });
+      refreshTiles(room);
+    }
   };
 
   const listDevices = async () => {

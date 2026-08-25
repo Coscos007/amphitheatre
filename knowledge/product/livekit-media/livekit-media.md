@@ -18,6 +18,9 @@ sources:
   - id: rule
     resource: /rules/presence-indicators-required.md
     title: Indicators
+  - id: audio
+    resource: /rules/livekit-remote-audio-must-play.md
+    title: Remote audio must play
 ---
 
 # Implemented
@@ -25,7 +28,9 @@ sources:
 - LiveKit room **=** Amphitheatre `roomId`. Identity **=** `userId`.
 - `GET /api/rooms/:id/livekit-token` and token on join (`livekitToken` / `livekitUrl`).
 - Grants: `canPublish` + sources camera, mic, screen. Moderation mute **removes** `MICROPHONE` from `canPublishSources` and calls RoomService `updateParticipant`.[^livekit-api]
-- SPA: `livekit-client` (not `@livekit/components-react` in this cut). Custom tiles. SDK default simulcast.[^hook]
+- SPA: `livekit-client` (not `@livekit/components-react` in this cut). Custom tiles. Remote **audio tracks are attached** (mic and screen-share audio); video tiles stay on `AttachVideo`. SDK default simulcast.[^hook]
+- Screen share requests tab/system audio (`audio` + Chromium `systemAudio: "include"`). Local screen audio is not played back. If the browser rejects the audio constraint, share continues as video-only.
+- `room.startAudio()` after connect and on user gestures; toast when autoplay still blocks. Speaking indicators are not treated as proof of audible output.
 - SFU: image `livekit/livekit-server:v1.13.5`, UDP mux `7882`, ICE TCP `7881`, Valkey DB 1 (RESP), `max_participants: 50`, no egress.[^yaml]
 - Webhook `POST /webhooks/livekit` updates camera/screen in the hub.
 - Client emits `presence.update` (speaking, camera, screen, quality).
@@ -42,6 +47,7 @@ Speaking, camera, screen, `connectionQuality` mapped to `excellent|good|poor|los
 
 # Related
 
+- [LiveKit remote audio must play](/rules/livekit-remote-audio-must-play.md)
 - [Valkey for LiveKit](/rules/valkey-for-livekit.md)
 - [OME independent of WebRTC](/rules/ome-independent-of-webrtc.md)
 - [No recording](/rules/no-recording.md)

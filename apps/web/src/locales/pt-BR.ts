@@ -81,7 +81,11 @@ export const ptBR: Messages = {
     camOff: "Ligar câmera",
     shareOn: "Parar compartilhamento",
     shareOff: "Compartilhar tela",
+    shareAudioHint:
+      "Compartilhe uma janela, uma aba do navegador ou a tela inteira. No Chromium, marque a opção para incluir o áudio da aba ou do sistema.",
     shareUnavailable: "Compartilhar tela não está disponível neste dispositivo",
+    enableAudio: "O navegador bloqueou o som até você interagir. Ative o áudio para ouvir as outras pessoas.",
+    enableAudioAction: "Ativar áudio",
     mutedLocked: "Um moderador te silenciou nesta sala",
     livekitDown:
       "Voz e câmera estão indisponíveis agora. O chat continua funcionando.",

@@ -142,6 +142,7 @@ services:
     init: true
     environment:
       OME_HOST_IP: ${PUBLIC_OME_HOSTNAME}
+      OME_API_ACCESS_TOKEN: ${OME_API_ACCESS_TOKEN}
       OME_RTMP_PROV_PORT: "1935"
       OME_ORIGIN_PORT: "9000"
       OME_LLHLS_STREAM_PORT: "3333"

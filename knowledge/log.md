@@ -2,6 +2,10 @@
 
 ## 2026-08-24
 
+* **Fix**: Remote LiveKit microphone and screen-share audio now attach and unlock autoplay; screen share can include tab or system audio in Chromium. Rule [livekit-remote-audio-must-play](/rules/livekit-remote-audio-must-play.md). Change: [livekit-audio-playback](/changes/2026-08-24/livekit-audio-playback/livekit-audio-playback.md).
+
+* **Fix**: Deploy Compose injects `OME_API_ACCESS_TOKEN` into OvenMediaEngine; Server.xml interpolates that env var so REST stream status is not 401. Change: [ome-api-access-token](/changes/2026-08-24/ome-api-access-token/ome-api-access-token.md).
+
 * **Creation**: `deploy/` standalone self-hosting stack (Compose + Caddy/Traefik examples), single production `Dockerfile` (API serves the built web app), `PUBLIC_APP_HOSTNAME`/`PUBLIC_LIVEKIT_HOSTNAME`/`PUBLIC_OME_HOSTNAME` env vars, `docs/self-hosting.md`, human-readable `README.md`, root `CHANGELOG.md`, and a tag-triggered `.github/workflows/release.yml` publishing multi-arch images to Docker Hub (`simstosh/amphitheatre`). Rule [changelog-and-release-process](/rules/changelog-and-release-process.md). Change: [self-hosting-docker-release](/changes/2026-08-24/self-hosting-docker-release/self-hosting-docker-release.md).
 
 * **Update**: `scripts/extract-changelog.sh promote <version>` command to move `[Unreleased]` into a dated version section automatically; fixed the `Dockerfile` multi-arch release build (`--platform=$BUILDPLATFORM` on the JS build stages) after it crashed under QEMU emulation cross-building `linux/arm64`; cut the `v1.0.0` release. Change: [self-hosting-docker-release](/changes/2026-08-24/self-hosting-docker-release/self-hosting-docker-release.md).

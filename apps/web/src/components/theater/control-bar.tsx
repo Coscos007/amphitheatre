@@ -132,7 +132,13 @@ export function ControlBar({
           label={t("theater.dockShare")}
           pressed={screenEnabled}
           disabled={livekitUnavailable || !shareOk}
-          title={!shareOk ? t("theater.shareUnavailable") : screenEnabled ? t("theater.shareOn") : t("theater.shareOff")}
+          title={
+            !shareOk
+              ? t("theater.shareUnavailable")
+              : screenEnabled
+                ? t("theater.shareOn")
+                : t("theater.shareAudioHint")
+          }
           onClick={() => void onScreen(!screenEnabled)}
         >
           <IconScreenShare className="size-5" aria-hidden="true" />

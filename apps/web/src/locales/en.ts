@@ -79,7 +79,11 @@ export const en = {
     camOff: "Start camera",
     shareOn: "Stop screen share",
     shareOff: "Share screen",
+    shareAudioHint:
+      "Share a window, a browser tab, or the whole screen. In Chromium, tick the box to include tab or system audio.",
     shareUnavailable: "Screen share is not available on this device",
+    enableAudio: "The browser blocked sound until you interact. Enable audio to hear others.",
+    enableAudioAction: "Enable audio",
     mutedLocked: "A moderator muted you in this room",
     livekitDown:
       "Voice and camera are unavailable right now. Chat still works.",

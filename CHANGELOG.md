@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Screen share can include tab or system audio (Chromium picker). If the browser rejects the audio constraint, share continues as video-only.
+
+### Fixed
+
+- LiveKit voice was silent for everyone even when the speaking indicator lit up: remote audio tracks are now attached and autoplay is unlocked (`room.startAudio()` plus an enable-audio prompt).
+- Deploy Compose now passes `OME_API_ACCESS_TOKEN` into the OvenMediaEngine container, matching `<AccessToken>` in `Server.xml`, so the app can poll whether a stream is live.
+
 ## [1.0.0] - 2026-08-24
 
 ### Added

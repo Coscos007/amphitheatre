@@ -1,5 +1,7 @@
 # Changes — 2026-08-24
 
+* [LiveKit remote audio and screen-share sound](livekit-audio-playback/livekit-audio-playback.md) - attach remote audio tracks; Chromium tab/system audio on screen share
+* [OME REST access token in Compose](ome-api-access-token/ome-api-access-token.md) - inject `OME_API_ACCESS_TOKEN` into the OME container so stream status polling is not 401
 * [Self-hosting, single Docker image, and release automation](self-hosting-docker-release/self-hosting-docker-release.md) - human-readable README/guide; deploy/ Compose stack; Dockerfile; PUBLIC_*_HOSTNAME; CHANGELOG.md; tag-triggered Docker Hub release
 * [Infinite grid 3D on Home](home-infinite-grid-3d/home-infinite-grid-3d.md) - customizable CSS 3D background instead of the radial
 * [Tabler + browser locale](tabler-icons-and-locale-detect/tabler-icons-and-locale-detect.md) - Tabler icons; automatic language; persist after choice
