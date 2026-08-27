@@ -11,6 +11,8 @@ export function joinErrorMessageKey(error: unknown): string {
     case "room_full":
     case "conflict":
       return "join.full";
+    case "duplicate_display_name":
+      return "join.duplicateName";
     case "banned":
       return "join.banned";
     case "unauthorized":

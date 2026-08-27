@@ -346,6 +346,26 @@ export function listMemberships(db: Database, roomId: string): MembershipRow[] {
   return db.query("SELECT * FROM memberships WHERE room_id = ?").all(roomId) as MembershipRow[];
 }
 
+export function listPresentMembershipsInRoom(db: Database, roomId: string): MembershipRow[] {
+  return db
+    .query("SELECT * FROM memberships WHERE room_id = ? AND left_at IS NULL")
+    .all(roomId) as MembershipRow[];
+}
+
+export function isDisplayNameTaken(
+  db: Database,
+  roomId: string,
+  displayName: string,
+  excludeUserId?: string,
+): boolean {
+  const rows = db
+    .query(
+      "SELECT user_id FROM memberships WHERE room_id = ? AND left_at IS NULL AND LOWER(display_name) = LOWER(?)",
+    )
+    .all(roomId, displayName) as Array<{ user_id: string }>;
+  return rows.some((row) => row.user_id !== excludeUserId);
+}
+
 export function upsertJoin(
   db: Database,
   input: {

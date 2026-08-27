@@ -16,6 +16,8 @@ export type RoomMember = {
   role: Role;
   muted: boolean;
   present: boolean;
+  /** Live WS attachment; omitted on REST join until the first presence frame. */
+  connected?: boolean;
 };
 
 export type Room = {
@@ -79,6 +81,7 @@ export type PresenceState = {
   screen: boolean;
   quality: ConnectionQuality | null;
   present: boolean;
+  connected: boolean;
 };
 
 export type ChatMessage = {

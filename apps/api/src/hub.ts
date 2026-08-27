@@ -274,7 +274,7 @@ export class RoomHub {
 
   snapshot(roomId: string): PresenceState[] {
     const liveRoom = this.live.get(roomId);
-    return this.roomsApi.listMemberships(roomId).map((m) => {
+    return this.roomsApi.listPresentMemberships(roomId).map((m) => {
       const p = liveRoom?.get(m.user_id);
       return {
         userId: m.user_id,
@@ -285,7 +285,8 @@ export class RoomHub {
         camera: p?.camera ?? false,
         screen: p?.screen ?? false,
         quality: p?.quality ?? null,
-        present: m.left_at === null,
+        present: true,
+        connected: this.isConnected(roomId, m.user_id),
       };
     });
   }
@@ -326,7 +327,7 @@ export class RoomHub {
       });
       this.broadcastPresence(roomId);
       logger.info("ws_grace_leave", { roomId });
-    }, this.env.WS_GRACE_MS);
+    }, this.env.OFFLINE_REMOVE_MS);
     this.leaveTimers.set(key, timer);
   }
 

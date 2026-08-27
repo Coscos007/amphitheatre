@@ -16,6 +16,7 @@ type RoomState = {
   screenEnabled: boolean;
   lockoutUntil: number | null;
   chatMutedUntil: number | null;
+  localMutedUserIds: Record<string, true>;
   setRoom: (room: Room | null) => void;
   setBroadcast: (broadcast: RoomBroadcast) => void;
   patchMembers: (members: RoomMember[]) => void;
@@ -58,6 +59,7 @@ const initial = {
   screenEnabled: false,
   lockoutUntil: null as number | null,
   chatMutedUntil: null as number | null,
+  localMutedUserIds: {} as Record<string, true>,
 };
 
 export const useRoomStore = create<RoomState>((set) => ({
@@ -103,5 +105,12 @@ export const useRoomStore = create<RoomState>((set) => ({
   setLocalMediaFlags: (flags) => set(flags),
   setLockout: (until) => set({ lockoutUntil: until }),
   setChatMutedUntil: (until) => set({ chatMutedUntil: until }),
+  setLocalMuted: (userId, muted) =>
+    set((state) => {
+      const next = { ...state.localMutedUserIds };
+      if (muted) next[userId] = true;
+      else delete next[userId];
+      return { localMutedUserIds: next };
+    }),
   reset: () => set({ ...initial }),
 }));

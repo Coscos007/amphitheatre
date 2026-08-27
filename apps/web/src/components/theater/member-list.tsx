@@ -1,6 +1,7 @@
 import { IconUsers } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { ParticipantMedia, Role, RoomMember } from "../../shared-types.ts";
+import { useRoomStore } from "../../stores/room-store.ts";
 import { MemberRow } from "./member-row.tsx";
 
 type MemberListProps = {
@@ -21,12 +22,14 @@ export function MemberList({
   roomId,
 }: MemberListProps) {
   const { t } = useTranslation();
-  const sorted = [...members].sort((a, b) => {
+  const localMutedUserIds = useRoomStore((s) => s.localMutedUserIds);
+  const visible = members.filter((member) => member.present);
+  const sorted = [...visible].sort((a, b) => {
     const rank = (role: Role) =>
       role === "owner" ? 0 : role === "admin" ? 1 : role === "moderator" ? 2 : 3;
     const roleDelta = rank(a.role) - rank(b.role);
     if (roleDelta !== 0) return roleDelta;
-    if (a.present !== b.present) return a.present ? -1 : 1;
+    if (a.connected !== b.connected) return a.connected ? -1 : 1;
     return a.displayName.localeCompare(b.displayName);
   });
 
@@ -51,6 +54,7 @@ export function MemberList({
           omeLive={omeLive}
           media={mediaByUserId[member.userId]}
           roomId={roomId}
+          localMuted={Boolean(localMutedUserIds[member.userId])}
         />
       ))}
     </ul>

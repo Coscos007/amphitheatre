@@ -66,4 +66,23 @@ describe("join and room preview errors", () => {
     expect(ok.status).toBe(200);
     expect(ok.body.role).toBe("member");
   });
+
+  test("join com nome de exibicao duplicado e duplicate_display_name", async () => {
+    const { app } = makeApp();
+    const owner = await createGuest(app, "Lucas");
+    const room = await createRoom(app, owner.token, { name: "Arena" });
+    const jose = await createGuest(app, "Jose");
+    const first = await joinRoom(app, jose.token, room.id);
+    expect(first.status).toBe(200);
+
+    const jose2 = await createGuest(app, "Jose");
+    const duplicate = await joinRoom(app, jose2.token, room.id);
+    expect(duplicate.status).toBe(409);
+    expect(duplicate.body.error).toBe("duplicate_display_name");
+
+    const lucasLower = await createGuest(app, "lucas");
+    const caseDup = await joinRoom(app, lucasLower.token, room.id);
+    expect(caseDup.status).toBe(409);
+    expect(caseDup.body.error).toBe("duplicate_display_name");
+  });
 });

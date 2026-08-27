@@ -81,18 +81,28 @@ function publicationFlags(participant: Participant) {
   return { camera, screen };
 }
 
-function applyRemoteVolume(room: Room, volume: number) {
+function applyRemoteVolume(room: Room, volume: number, localMutedUserIds: Record<string, true>) {
   room.remoteParticipants.forEach((participant) => {
-    participant.audioTrackPublications.forEach((pub) => {
-      if (pub.audioTrack instanceof RemoteAudioTrack) {
-        pub.audioTrack.setVolume(volume);
-      }
-    });
+    const muted = Boolean(localMutedUserIds[participant.identity]);
+    applyParticipantVolume(participant, volume, muted);
+  });
+}
+
+function applyParticipantVolume(
+  participant: RemoteParticipant,
+  volume: number,
+  locallyMuted: boolean,
+) {
+  participant.audioTrackPublications.forEach((pub) => {
+    if (pub.audioTrack instanceof RemoteAudioTrack) {
+      pub.audioTrack.setVolume(locallyMuted ? 0 : volume);
+    }
   });
 }
 
 async function applySavedDevices(room: Room) {
   const prefs = readDevicePrefs();
+  const localMutedUserIds = useRoomStore.getState().localMutedUserIds;
   try {
     if (prefs.audioinput) await room.switchActiveDevice("audioinput", prefs.audioinput);
     if (prefs.videoinput) await room.switchActiveDevice("videoinput", prefs.videoinput);
@@ -100,7 +110,7 @@ async function applySavedDevices(room: Room) {
   } catch {
     /* device may have been unplugged */
   }
-  applyRemoteVolume(room, prefs.outputVolume);
+  applyRemoteVolume(room, prefs.outputVolume, localMutedUserIds);
   applyInputVolume(room, prefs.inputVolume);
 }
 
@@ -127,6 +137,7 @@ function isActiveVideoPublication(
 export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const roomRef = useRef<Room | null>(null);
   const [tiles, setTiles] = useState<StageTile[]>([]);
+  const localMutedUserIds = useRoomStore((s) => s.localMutedUserIds);
 
   const refreshTiles = useCallback((room: Room) => {
     const next: StageTile[] = [];
@@ -182,7 +193,9 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
       syncParticipant(participant);
       if (isRemoteAudioTrack(track)) {
         attachRemoteAudio(track);
-        applyRemoteVolume(room, readDevicePrefs().outputVolume);
+        const prefs = readDevicePrefs();
+        const muted = Boolean(useRoomStore.getState().localMutedUserIds[participant.identity]);
+        applyParticipantVolume(participant, prefs.outputVolume, muted);
         void unlockPlayback(room);
       }
       if (publication.kind === Track.Kind.Video) {
@@ -329,6 +342,13 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
     };
   }, [roomId, enabled, refreshTiles, syncParticipant]);
 
+  useEffect(() => {
+    const room = roomRef.current;
+    if (!room) return;
+    const prefs = readDevicePrefs();
+    applyRemoteVolume(room, prefs.outputVolume, localMutedUserIds);
+  }, [localMutedUserIds]);
+
   const setMic = async (enabledMic: boolean) => {
     const room = roomRef.current;
     if (!room) return;
@@ -401,7 +421,7 @@ export function useLivekitRoom(roomId: string | undefined, enabled: boolean) {
   const setOutputVolume = (volume: number) => {
     const room = roomRef.current;
     if (!room) return;
-    applyRemoteVolume(room, volume);
+    applyRemoteVolume(room, volume, useRoomStore.getState().localMutedUserIds);
   };
 
   const setInputVolume = (volume: number) => {

@@ -30,7 +30,9 @@ import {
   insertBan,
   insertRoom,
   isBanned,
+  isDisplayNameTaken,
   listMemberships,
+  listPresentMembershipsInRoom,
   listPublicRooms,
   markLeft,
   setMuted,
@@ -129,7 +131,7 @@ export class RoomService {
     this.purgeExpired();
     const row = this.ensureActiveRow(getRoom(this.deps.db, id));
     const membership = viewer ? getMembership(this.deps.db, id, viewer.userId) : null;
-    const members = membership ? listMemberships(this.deps.db, id).map(toMember) : undefined;
+    const members = membership ? listPresentMembershipsInRoom(this.deps.db, id).map(toMember) : undefined;
     return publicRoom(row, countPresent(this.deps.db, id), members);
   }
 
@@ -275,6 +277,10 @@ export class RoomService {
       throw new HttpError(409, "room_full", "A sala esta cheia");
     }
 
+    if (!alreadyIn && isDisplayNameTaken(db, roomId, user.displayName, user.userId)) {
+      throw new HttpError(409, "duplicate_display_name", "Este nome ja esta em uso nesta sala");
+    }
+
     const role: Role =
       row.owner_id === user.userId
         ? "owner"
@@ -296,7 +302,7 @@ export class RoomService {
 
     const membership = getMembership(db, roomId, user.userId);
     const muted = membership?.muted === 1;
-    const members = listMemberships(db, roomId).map(toMember);
+    const members = listPresentMembershipsInRoom(db, roomId).map(toMember);
     const activeRow = getRoom(db, roomId) ?? row;
     const room = publicRoom(activeRow, countPresent(db, roomId), members);
     const ome = await this.omeInfo(activeRow, role);
@@ -463,7 +469,7 @@ export class RoomService {
     const updated = getRoom(this.deps.db, roomId);
     if (!updated) throw new HttpError(404, "not_found", "Sala nao encontrada");
     logger.info("room_chat_settings", { roomId, floodBanSec: next });
-    return publicRoom(updated, countPresent(this.deps.db, roomId), listMemberships(this.deps.db, roomId).map(toMember));
+    return publicRoom(updated, countPresent(this.deps.db, roomId), listPresentMembershipsInRoom(this.deps.db, roomId).map(toMember));
   }
 
   chatFloodBanSec(roomId: string): number {
@@ -488,7 +494,7 @@ export class RoomService {
       const updated = getRoom(this.deps.db, roomId);
       if (!updated) throw new HttpError(404, "not_found", "Sala nao encontrada");
       logger.info("room_broadcast", { roomId, enabled: false });
-      return publicRoom(updated, countPresent(this.deps.db, roomId), listMemberships(this.deps.db, roomId).map(toMember));
+      return publicRoom(updated, countPresent(this.deps.db, roomId), listPresentMembershipsInRoom(this.deps.db, roomId).map(toMember));
     }
 
     const provider = input.provider;
@@ -509,7 +515,7 @@ export class RoomService {
     const updated = getRoom(this.deps.db, roomId);
     if (!updated) throw new HttpError(404, "not_found", "Sala nao encontrada");
     logger.info("room_broadcast", { roomId, enabled: true, provider });
-    return publicRoom(updated, countPresent(this.deps.db, roomId), listMemberships(this.deps.db, roomId).map(toMember));
+    return publicRoom(updated, countPresent(this.deps.db, roomId), listPresentMembershipsInRoom(this.deps.db, roomId).map(toMember));
   }
 
   async omeInfo(row: RoomRow, role: Role | null): Promise<OmeInfo> {
@@ -565,6 +571,10 @@ export class RoomService {
 
   listMemberships(roomId: string): MembershipRow[] {
     return listMemberships(this.deps.db, roomId);
+  }
+
+  listPresentMemberships(roomId: string): MembershipRow[] {
+    return listPresentMembershipsInRoom(this.deps.db, roomId);
   }
 
   markLeftIfPresent(roomId: string, userId: string): void {

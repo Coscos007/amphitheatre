@@ -41,6 +41,7 @@ From the client: `chat.send`, `presence.update`.
 - `cannot_join` remains in the error-code enum but is not used for missing rooms or wrong passwords.
 - Lockout: `locked_out` + `retryAfterMs`.
 - Room full: `room_full` (409).
+- Duplicate display name among present members: `duplicate_display_name` (409).
 - Rate limit: `429` + `retryAfterMs`.
 
 `GET /api/rooms/:id/media` returns `ome.reachable=false` when the OME process did not respond. The SPA must not show a broadcast banner only because env has a URL. The `broadcast` field describes whether the shared stage is on and which provider (`ome` | `twitch` | `youtube` | `kick` | `custom`).

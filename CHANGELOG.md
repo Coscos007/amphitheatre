@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-27
+
 ### Added
 
 - Operator console can provision theater rooms manually: custom id (duplicate ids rejected), member limit above the guest cap (up to `MAX_ADMIN_MEMBERS_PER_ROOM`, default 500), optional password, public/private visibility, and optional expiry (indefinite rooms persist when empty; timed rooms are removed from SQLite after the deadline). First guest to join a provisioned room becomes owner. `POST /api/admin/rooms`.
@@ -92,7 +94,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Multi-arch Docker release build: pin the JS-only `deps`/`build` stages in `Dockerfile` to `--platform=$BUILDPLATFORM` so `pnpm install`/`vite build` run natively on the runner instead of crashing under QEMU emulation ("illegal instruction") while cross-building `linux/arm64`.
 
-[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.3.0
 [1.2.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.2.0
 [1.1.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.1.0
 [1.0.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.0.0

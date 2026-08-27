@@ -101,6 +101,7 @@ export type Env = {
   LOCKOUT_DURATION_MS: number;
   CHAT_HISTORY_LIMIT: number;
   WS_GRACE_MS: number;
+  OFFLINE_REMOVE_MS: number;
   RATE_CREATE: { limit: number; windowMs: number };
   RATE_JOIN: { limit: number; windowMs: number };
   RATE_CHAT: { limit: number; windowMs: number };
@@ -175,6 +176,7 @@ export function loadEnv(overrides: Partial<Env> = {}): Env {
     LOCKOUT_DURATION_MS: intEnv("LOCKOUT_DURATION_MS", 5 * 60 * 1000),
     CHAT_HISTORY_LIMIT: intEnv("CHAT_HISTORY_LIMIT", 200),
     WS_GRACE_MS: intEnv("WS_GRACE_MS", 15_000),
+    OFFLINE_REMOVE_MS: intEnv("OFFLINE_REMOVE_MS", 5 * 60 * 1000),
     RATE_CREATE: { limit: 5, windowMs: 10 * 60 * 1000 },
     RATE_JOIN: { limit: 30, windowMs: 60 * 1000 },
     RATE_CHAT: { limit: 20, windowMs: 10 * 1000 },

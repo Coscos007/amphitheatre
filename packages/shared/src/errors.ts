@@ -9,6 +9,7 @@ export const errorCodes = [
   "banned",
   "locked_out",
   "room_full",
+  "duplicate_display_name",
   "rate_limited",
   "conflict",
   "livekit_unavailable",

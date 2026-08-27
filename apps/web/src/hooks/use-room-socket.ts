@@ -18,6 +18,7 @@ function presenceToMembers(members: PresenceState[]) {
     role: item.role,
     muted: item.muted,
     present: item.present,
+    connected: item.connected,
   }));
 }
 

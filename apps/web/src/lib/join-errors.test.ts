@@ -19,5 +19,7 @@ describe("joinErrorMessageKey", () => {
     expect(joinErrorMessageKey(wrong)).toBe("join.invalidPassword");
     const legacy = new ApiError({ status: 403, code: "cannot_join", message: "nope" });
     expect(joinErrorMessageKey(legacy)).toBe("toast.joinFailed");
+    const duplicate = new ApiError({ status: 409, code: "duplicate_display_name", message: "dup" });
+    expect(joinErrorMessageKey(duplicate)).toBe("join.duplicateName");
   });
 });

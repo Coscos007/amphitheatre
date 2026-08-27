@@ -3,6 +3,7 @@ import {
   IconMicrophoneOff,
   IconScreenShare,
   IconVideo,
+  IconVolumeOff,
   IconWaveSine,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -28,6 +29,7 @@ type MemberRowProps = {
   omeLive?: boolean;
   media?: ParticipantMedia;
   roomId: string;
+  localMuted?: boolean;
 };
 
 export function MemberRow({
@@ -37,6 +39,7 @@ export function MemberRow({
   omeLive,
   media,
   roomId,
+  localMuted,
 }: MemberRowProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -83,6 +86,12 @@ export function MemberRow({
                 {t("indicator.muted")}
               </span>
             ) : null}
+            {localMuted ? (
+              <span className="inline-flex items-center gap-1">
+                <IconVolumeOff className="size-3.5" aria-hidden="true" />
+                {t("indicator.locallyMuted")}
+              </span>
+            ) : null}
             {media?.camera ? (
               <span className="inline-flex items-center gap-1">
                 <IconVideo className="size-3.5" aria-hidden="true" />
@@ -95,7 +104,7 @@ export function MemberRow({
                 {t("indicator.screen")}
               </span>
             ) : null}
-            {!member.present ? (
+            {member.connected === false ? (
               <span className="inline-flex items-center gap-1">
                 <IconCircleOff className="size-3.5" aria-hidden="true" />
                 {t("indicator.offline")}
@@ -113,6 +122,7 @@ export function MemberRow({
         actorRole={actorRole}
         member={member}
         isSelf={isSelf}
+        localMuted={localMuted}
       />
     </li>
   );

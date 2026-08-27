@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { banMember, kickMember, muteMember, setMemberRole } from "../../lib/api.ts";
 import { canManageRoles, canModerateTarget } from "../../lib/permissions.ts";
 import type { AssignableRole, Role, RoomMember } from "../../shared-types.ts";
+import { useRoomStore } from "../../stores/room-store.ts";
 import { Avatar } from "../ui/avatar.tsx";
 import { Badge } from "../ui/badge.tsx";
 import { Button } from "../ui/button.tsx";
@@ -25,6 +26,7 @@ type MemberPermissionsModalProps = {
   actorRole?: Role;
   member: RoomMember;
   isSelf: boolean;
+  localMuted?: boolean;
 };
 
 export function MemberPermissionsModal({
@@ -34,10 +36,12 @@ export function MemberPermissionsModal({
   actorRole,
   member,
   isSelf,
+  localMuted,
 }: MemberPermissionsModalProps) {
   const { t } = useTranslation();
   const [pending, setPending] = useState<Pending>(null);
   const [busy, setBusy] = useState(false);
+  const setLocalMuted = useRoomStore((s) => s.setLocalMuted);
 
   const canKick = Boolean(actorRole && !isSelf && canModerateTarget(actorRole, member.role, "kick"));
   const canMute = Boolean(actorRole && !isSelf && canModerateTarget(actorRole, member.role, "mute"));
@@ -132,9 +136,17 @@ export function MemberPermissionsModal({
             ) : null}
           </div>
         ) : null}
-        {!canRoles && !canMute && !canKick && !canBan ? (
-          <p className="mt-4">{isSelf ? t("mod.selfHint") : t("mod.noActions")}</p>
+        {!isSelf ? (
+          <div className="mt-4 flex flex-col gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setLocalMuted(member.userId, !localMuted)}
+            >
+              {localMuted ? t("mod.unmuteLocally") : t("mod.muteLocally")}
+            </Button>
+          </div>
         ) : null}
+        {isSelf ? <p className="mt-4">{t("mod.selfHint")}</p> : null}
       </Dialog>
       <Dialog
         open={pending !== null}

@@ -1,0 +1,196 @@
+# Amphitheatre behind Traefik — use this file INSTEAD of docker-compose.yml
+# if you already run Traefik (or want to) as your reverse proxy.
+#
+# Compared to docker-compose.yml, the HTTP/WebSocket ports of "app", "livekit",
+# and "ome" are NOT published on the host — Traefik reaches them over the
+# internal Docker network by service name, and terminates TLS for you.
+# Raw WebRTC/RTMP media (UDP/TCP, not HTTP) still has to be published
+# directly on the host; no reverse proxy can carry that traffic.
+#
+# Already run Traefik for other sites on this machine? Skip the "traefik"
+# service below, remove the "amphitheatre" network block, and instead put
+# every service on your existing Traefik network (usually declared as
+# "external: true"). See docs/self-hosting.md for the full walkthrough.
+#
+# Quick start:
+#   cp env.example .env   # then edit .env with your domains and secrets
+#   docker compose -f docker-compose.traefik.yml up -d
+#   docker compose -f docker-compose.traefik.yml --profile ome up -d
+
+name: amphitheatre
+
+networks:
+  amphitheatre:
+    name: amphitheatre
+    driver: bridge
+  traefik:
+    external: true
+
+services:
+#  traefik:
+#    image: traefik:v3.5
+#    container_name: amphitheatre-traefik
+#    restart: unless-stopped
+#    command:
+#      - --providers.docker=true
+#      - --providers.docker.exposedbydefault=false
+#      - --entrypoints.web.address=:80
+#      - --entrypoints.websecure.address=:443
+#      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+#      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+#      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+#      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - traefik-certs:/letsencrypt
+#    networks: [amphitheatre]
+
+  app:
+    image: simstosh/amphitheatre:latest
+    container_name: amphitheatre-app
+    restart: unless-stopped
+    depends_on:
+      livekit:
+        condition: service_started
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET}
+      PUBLIC_APP_HOSTNAME: ${PUBLIC_APP_HOSTNAME}
+      PUBLIC_APP_ADMIN_HOSTNAME: ${PUBLIC_APP_ADMIN_HOSTNAME}
+      PUBLIC_LIVEKIT_HOSTNAME: ${PUBLIC_LIVEKIT_HOSTNAME}
+      PUBLIC_OME_HOSTNAME: ${PUBLIC_OME_HOSTNAME}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_HTTP_URL: http://livekit:7880
+      LIVEKIT_METRICS_URL: http://livekit:6789/metrics
+      OME_API_URL: http://ome:8081
+      OME_API_ACCESS_TOKEN: ${OME_API_ACCESS_TOKEN}
+      TRUST_PROXY: "true"
+      COOKIE_SECURE: "true"
+      DATABASE_PATH: /app/data/amphitheatre.sqlite
+      ADMIN_BIND: "0.0.0.0"
+      ADMIN_PORT: "3002"
+    volumes:
+      - app-data:/app/data
+    networks: [amphitheatre,traefik]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.amphitheatre.rule=Host(`${PUBLIC_APP_HOSTNAME}`)
+      - traefik.http.routers.amphitheatre.entrypoints=websecure
+      - traefik.http.routers.amphitheatre.tls.certresolver=letsencrypt
+      - traefik.http.routers.amphitheatre.service=amphitheatre
+      - traefik.http.services.amphitheatre.loadbalancer.server.port=3001
+      - traefik.http.routers.amphitheatre-admin.rule=Host(`${PUBLIC_APP_ADMIN_HOSTNAME}`)
+      - traefik.http.routers.amphitheatre-admin.entrypoints=websecure
+      - traefik.http.routers.amphitheatre-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.amphitheatre-admin.service=amphitheatre-admin
+      - traefik.http.services.amphitheatre-admin.loadbalancer.server.port=3002
+      - traefik.http.routers.amphitheatre-admin.middlewares=ip-whitelist@file
+
+  redis:
+    image: valkey/valkey:9.1.1-alpine
+    container_name: amphitheatre-valkey
+    restart: unless-stopped
+    command: ["valkey-server", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction", "--save", "60", "1"]
+    volumes:
+      - valkey-data:/data
+    networks: [amphitheatre]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  livekit:
+    image: livekit/livekit-server:v1.13.5
+    container_name: amphitheatre-livekit
+    restart: unless-stopped
+    init: true
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["--config", "/etc/livekit.yaml"]
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      # Only the raw media ports. Signalling (7880) goes through Traefik.
+      - "7881:7881"      # ICE/TCP fallback
+      - "7882:7882/udp"  # WebRTC media (UDP mux)
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks: [amphitheatre,traefik]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7880/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.amphitheatre-livekit.rule=Host(`${PUBLIC_LIVEKIT_HOSTNAME}`)
+      - traefik.http.routers.amphitheatre-livekit.entrypoints=websecure
+      - traefik.http.routers.amphitheatre-livekit.tls.certresolver=letsencrypt
+      - traefik.http.services.amphitheatre-livekit.loadbalancer.server.port=7880
+
+  # Optional broadcast stage (OBS -> everyone watches the same live stream).
+  # Start with: docker compose -f docker-compose.traefik.yml --profile ome up -d
+  ome:
+    image: ovenmedialabs/ovenmediaengine:v0.21.0
+    container_name: amphitheatre-ome
+    profiles: ["ome"]
+    restart: unless-stopped
+    init: true
+    environment:
+      OME_HOST_IP: ${PUBLIC_OME_HOSTNAME}
+      OME_API_ACCESS_TOKEN: ${OME_API_ACCESS_TOKEN}
+      OME_RTMP_PROV_PORT: "1935"
+      OME_ORIGIN_PORT: "9000"
+      OME_LLHLS_STREAM_PORT: "3333"
+      OME_LLHLS_STREAM_TLS_PORT: "3334"
+      OME_WEBRTC_SIGNALLING_PORT: "3333"
+      OME_WEBRTC_SIGNALLING_TLS_PORT: "3334"
+      OME_WEBRTC_TCP_RELAY_PORT: "3478"
+      OME_WEBRTC_CANDIDATE_PORT: "10000-10003/udp"
+      OME_WEBRTC_TCP_ICE_PORT: "10000/tcp"
+    volumes:
+      - ./ome/origin_conf:/opt/ovenmediaengine/bin/origin_conf:ro
+    ports:
+      # Only raw media/ingest ports. Signalling + LL-HLS (3333) go through Traefik.
+      - "1935:1935"                    # RTMP ingest (OBS)
+      - "3478:3478"                    # TURN / TCP relay
+      - "10000-10003:10000-10003/udp"  # WebRTC ICE (UDP)
+      - "10000:10000/tcp"              # WebRTC ICE (TCP)
+    networks: [amphitheatre,traefik]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8081'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.amphitheatre-ome.rule=Host(`${PUBLIC_OME_HOSTNAME}`)
+      - traefik.http.routers.amphitheatre-ome.entrypoints=websecure
+      - traefik.http.routers.amphitheatre-ome.tls.certresolver=letsencrypt
+      - traefik.http.services.amphitheatre-ome.loadbalancer.server.port=3333
+
+volumes:
+  app-data:
+    name: amphitheatre-app-data
+  valkey-data:
+    name: amphitheatre-valkey-data
+  traefik-certs:
+    name: amphitheatre-traefik-certs
