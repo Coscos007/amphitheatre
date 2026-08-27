@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Operator console can provision theater rooms manually: custom id (duplicate ids rejected), member limit above the guest cap (up to `MAX_ADMIN_MEMBERS_PER_ROOM`, default 500), optional password, public/private visibility, and optional expiry (indefinite rooms persist when empty; timed rooms are removed from SQLite after the deadline). First guest to join a provisioned room becomes owner. `POST /api/admin/rooms`.
+- Join rejects duplicate display names among present members (`duplicate_display_name`, 409). Local mute lets each guest silence another participant for themselves without affecting others.
+- Theater audience lists only present members; disconnected guests show as offline until `OFFLINE_REMOVE_MS` (default 5 minutes), then leave the roster.
+
+### Changed
+
+- WebSocket presence includes a `connected` flag so offline members stay visible only during the offline grace window.
+
 ## [1.2.0] - 2026-08-25
 
 ### Added

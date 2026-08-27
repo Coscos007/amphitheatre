@@ -63,7 +63,9 @@ Set `ADMIN_ENABLED=false` to skip the second listen (theater-only).
 
 `GET /api/admin/rooms` lists **every** SQLite room (public, private, empty). Optional `hideEmpty=true`. Never includes `password_hash`. `streamKey` is admin-only.
 
-Each row: id, name, isPublic, hasPassword, memberLimit, present, uniqueEver, peak, createdAt, broadcast, plus LiveKit/OME snapshots when available.
+Each row: id, name, isPublic, hasPassword, memberLimit, present, uniqueEver, peak, createdAt, `expiresAt` (null = indefinite), broadcast, plus LiveKit/OME snapshots when available.
+
+`POST /api/admin/rooms` provisions a room without joining the theater as a guest. Body: `{ id, name, memberLimit, isPublic, password?, expiresInHours? }`. `id` is 6–12 alphanumeric characters (case-sensitive); duplicate ids return `409 conflict`. `memberLimit` may exceed the guest cap (up to `MAX_ADMIN_MEMBERS_PER_ROOM`, default 500). Omit `expiresInHours` for indefinite lifetime — the room stays in SQLite even when empty. When set, the room is deleted from SQLite after the deadline (memberships, bans, and room-scoped lockouts included). The first guest who joins becomes `owner` (provisioned rooms start with a sentinel owner id).
 
 `peak` is `rooms.peak_members`, updated on create and join as `max(peak, present)`. It does **not** fall when people leave.
 
@@ -94,6 +96,7 @@ All except login/logout require `ct_admin` (or `Authorization: Bearer` with an a
 | GET | `/api/admin/session` |
 | GET | `/api/admin/overview` |
 | GET | `/api/admin/rooms` |
+| POST | `/api/admin/rooms` |
 | GET | `/api/admin/rooms/:id` |
 | GET | `/api/admin/rooms/:id/metrics` |
 | GET | `/api/admin/metrics/livekit` |
@@ -114,6 +117,7 @@ All except login/logout require `ct_admin` (or `Authorization: Bearer` with an a
 | `LIVEKIT_METRICS_URL` | `http://127.0.0.1:6789/metrics` | Prometheus text scrape |
 | `METRICS_INTERVAL_MS` | `15000` | Sampler period |
 | `METRICS_RETENTION_DAYS` | `30` | Prune samples older than this |
+| `MAX_ADMIN_MEMBERS_PER_ROOM` | `500` | Cap for operator-provisioned rooms |
 | `CORS_ORIGIN` | includes `http://localhost:5174` in dev defaults | Admin Vite origin when not same-origin |
 
 Dev Compose already publishes LiveKit metrics on `127.0.0.1:6789`. The API on the host uses that default URL. Inside the production Compose network, set `LIVEKIT_METRICS_URL=http://livekit:6789/metrics`.

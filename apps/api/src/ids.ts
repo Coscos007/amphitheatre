@@ -1,5 +1,8 @@
 const ROOM_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz";
 
+/** Owner id for operator-provisioned rooms until the first guest joins. */
+export const PROVISIONED_OWNER_ID = "__provisioned__";
+
 function randomFrom(alphabet: string, length: number): string {
   const bytes = crypto.getRandomValues(new Uint8Array(length));
   let out = "";

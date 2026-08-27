@@ -7,8 +7,9 @@ import {
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { newAdminApiKey } from "./admin-bootstrap";
-import { getAdminRoom, listAdminRooms } from "./admin-inventory";
+import { getAdminRoom, listAdminRooms, adminRoomFromRow } from "./admin-inventory";
 import {
+  adminCreateRoomBodySchema,
   adminCreateUserBodySchema,
   adminFactoryResetBodySchema,
   adminLoginBodySchema,
@@ -151,6 +152,12 @@ export function registerAdminRoutes(
   app.get("/api/admin/rooms", zValidator("query", adminRangeQuerySchema, validatorHook), async (c) => {
     const hideEmpty = parseHideEmpty(c.req.valid("query").hideEmpty);
     return c.json(await listAdminRooms(rooms.deps, hideEmpty, hub));
+  });
+
+  app.post("/api/admin/rooms", zValidator("json", adminCreateRoomBodySchema, validatorHook), async (c) => {
+    const body = c.req.valid("json");
+    const row = await rooms.createByAdmin(body);
+    return c.json(adminRoomFromRow(db, row), 201);
   });
 
   app.get(

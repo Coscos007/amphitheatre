@@ -19,6 +19,7 @@ export type RoomRow = {
   broadcast_embed: string | null;
   chat_flood_ban_sec: number;
   peak_members: number;
+  expires_at: number | null;
 };
 
 export type MembershipRow = {
@@ -60,7 +61,8 @@ CREATE TABLE IF NOT EXISTS rooms (
   broadcast_provider TEXT NOT NULL DEFAULT 'none',
   broadcast_embed TEXT,
   chat_flood_ban_sec INTEGER NOT NULL DEFAULT 60,
-  peak_members INTEGER NOT NULL DEFAULT 0
+  peak_members INTEGER NOT NULL DEFAULT 0,
+  expires_at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS memberships (
@@ -206,6 +208,9 @@ function migrateRooms(db: Database): void {
   if (!cols.has("peak_members")) {
     db.exec("ALTER TABLE rooms ADD COLUMN peak_members INTEGER NOT NULL DEFAULT 0");
   }
+  if (!cols.has("expires_at")) {
+    db.exec("ALTER TABLE rooms ADD COLUMN expires_at INTEGER");
+  }
   db.exec(`
     UPDATE rooms SET peak_members = MAX(
       peak_members,
@@ -260,8 +265,8 @@ export function listPublicRooms(db: Database, limit = 100): RoomRow[] {
 
 export function insertRoom(db: Database, row: RoomRow): void {
   db.query(
-    `INSERT INTO rooms (id, name, password_hash, is_public, member_limit, owner_id, stream_key, created_at, creator_ip, broadcast_enabled, broadcast_provider, broadcast_embed, chat_flood_ban_sec, peak_members)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO rooms (id, name, password_hash, is_public, member_limit, owner_id, stream_key, created_at, creator_ip, broadcast_enabled, broadcast_provider, broadcast_embed, chat_flood_ban_sec, peak_members, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     row.id,
     row.name,
@@ -277,7 +282,30 @@ export function insertRoom(db: Database, row: RoomRow): void {
     row.broadcast_embed,
     row.chat_flood_ban_sec,
     row.peak_members,
+    row.expires_at,
   );
+}
+
+export function updateRoomOwner(db: Database, roomId: string, ownerId: string): void {
+  db.query("UPDATE rooms SET owner_id = ? WHERE id = ?").run(ownerId, roomId);
+}
+
+/** Removes rooms past `expires_at` and their memberships, bans, and room-scoped lockouts. */
+export function deleteExpiredRooms(db: Database, now: number): number {
+  const expired = db
+    .query("SELECT id FROM rooms WHERE expires_at IS NOT NULL AND expires_at <= ?")
+    .all(now) as { id: string }[];
+  if (expired.length === 0) return 0;
+  const wipe = db.transaction((ids: string[]) => {
+    for (const id of ids) {
+      db.query("DELETE FROM memberships WHERE room_id = ?").run(id);
+      db.query("DELETE FROM bans WHERE room_id = ?").run(id);
+      db.query("DELETE FROM lockouts WHERE lock_key GLOB ?").run(`*:${id}`);
+    }
+    db.query("DELETE FROM rooms WHERE expires_at IS NOT NULL AND expires_at <= ?").run(now);
+  });
+  wipe(expired.map((row) => row.id));
+  return expired.length;
 }
 
 export function updateBroadcast(

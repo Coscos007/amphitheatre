@@ -87,6 +87,11 @@ export function RoomDetailPage() {
               helpLabel={t("app.metricHelp")}
             />
             <KpiCard
+              label={t("room.expiresAt")}
+              value={data.expiresAt ? new Date(data.expiresAt).toLocaleString() : t("room.expiresNever")}
+              helpLabel={t("app.metricHelp")}
+            />
+            <KpiCard
               label={t("room.fanout")}
               value={formatBps(data.livekit?.estimatedFanoutBps ?? null)}
               hint={t("room.estimateHint")}

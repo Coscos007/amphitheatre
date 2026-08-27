@@ -72,6 +72,7 @@ export function adminRoomFromRow(db: Parameters<typeof countPresent>[0], row: Ro
     uniqueEver: countUniqueMembers(db, row.id),
     peak: row.peak_members,
     createdAt: toIso(row.created_at),
+    expiresAt: row.expires_at !== null ? toIso(row.expires_at) : null,
     ownerId: row.owner_id,
     streamKey: row.stream_key,
     broadcast: toBroadcast(row),

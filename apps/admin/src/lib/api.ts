@@ -1,5 +1,6 @@
 import {
   adminPaths,
+  type AdminCreateRoomBody,
   type AdminApiKeyRotateResponse,
   type AdminLivekitNodeMetrics,
   type AdminLoginResponse,
@@ -65,6 +66,10 @@ export function fetchOverview(range: AdminTimeRange): Promise<AdminOverview> {
 export function fetchRooms(hideEmpty: boolean): Promise<AdminRoomRow[]> {
   const query = hideEmpty ? "?hideEmpty=true" : "";
   return request(`${adminPaths.rooms}${query}`);
+}
+
+export function createRoom(body: AdminCreateRoomBody): Promise<AdminRoomRow> {
+  return request(adminPaths.rooms, { method: "POST", body: JSON.stringify(body) });
 }
 
 export function fetchRoom(id: string): Promise<AdminRoomRow> {

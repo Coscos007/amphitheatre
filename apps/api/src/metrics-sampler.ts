@@ -4,6 +4,7 @@ import {
   countPeopleNow,
   countPresent,
   countUniqueMembers,
+  deleteExpiredRooms,
   getRoom,
   insertLivekitSamples,
   insertOmeSamples,
@@ -86,6 +87,9 @@ export async function collectMetricsSample(deps: SamplerDeps): Promise<void> {
     const marked = reconcileStalePresence(db, hub, ts, env.WS_GRACE_MS);
     if (marked > 0) logger.info("presence_reconcile", { marked });
   }
+
+  const expired = deleteExpiredRooms(db, ts);
+  if (expired > 0) logger.info("rooms_expired", { removed: expired });
 
   let livekitReachable = false;
   const livekitRows: LivekitSampleRow[] = [];

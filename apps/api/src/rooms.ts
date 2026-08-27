@@ -24,6 +24,7 @@ import {
   countPresent,
   countRoomsCreatedSince,
   deleteBan,
+  deleteExpiredRooms,
   getMembership,
   getRoom,
   insertBan,
@@ -37,13 +38,14 @@ import {
   updateBroadcast,
   updateChatFloodBanSec,
   updatePeakMembers,
+  updateRoomOwner,
   upsertJoin,
   type MembershipRow,
   type RoomRow,
 } from "./db";
 import type { Env } from "./env";
 import { forbidden, HttpError, invalidPassword, lockedOut } from "./http-error";
-import { composeStreamKey, newRoomId } from "./ids";
+import { composeStreamKey, newRoomId, PROVISIONED_OWNER_ID } from "./ids";
 import type { LivekitService } from "./livekit";
 import { logger } from "./logger";
 import { clearLockouts, recordPasswordFailure, remainingLockMs } from "./lockout";
@@ -102,16 +104,30 @@ function publicRoom(row: RoomRow, memberCount: number, members?: RoomMember[]): 
 export class RoomService {
   constructor(readonly deps: RoomServiceDeps) {}
 
+  private purgeExpired(): void {
+    const removed = deleteExpiredRooms(this.deps.db, this.deps.clock.now());
+    if (removed > 0) logger.info("rooms_expired", { removed });
+  }
+
+  private ensureActiveRow(row: RoomRow | null): RoomRow {
+    if (!row) {
+      throw new HttpError(404, "not_found", "Sala nao encontrada");
+    }
+    if (row.expires_at !== null && row.expires_at <= this.deps.clock.now()) {
+      throw new HttpError(404, "not_found", "Sala nao encontrada");
+    }
+    return row;
+  }
+
   listPublic(): Room[] {
+    this.purgeExpired();
     const { db } = this.deps;
     return listPublicRooms(db).map((row) => publicRoom(row, countPresent(db, row.id)));
   }
 
   getVisible(id: string, viewer: SessionUser | null): Room {
-    const row = getRoom(this.deps.db, id);
-    if (!row) {
-      throw new HttpError(404, "not_found", "Sala nao encontrada");
-    }
+    this.purgeExpired();
+    const row = this.ensureActiveRow(getRoom(this.deps.db, id));
     const membership = viewer ? getMembership(this.deps.db, id, viewer.userId) : null;
     const members = membership ? listMemberships(this.deps.db, id).map(toMember) : undefined;
     return publicRoom(row, countPresent(this.deps.db, id), members);
@@ -161,6 +177,7 @@ export class RoomService {
       broadcast_embed: null,
       chat_flood_ban_sec: 60,
       peak_members: 0,
+      expires_at: null,
     };
     insertRoom(db, row);
     upsertJoin(db, {
@@ -183,21 +200,62 @@ export class RoomService {
     ]);
   }
 
+  async createByAdmin(
+    input: {
+      id: string;
+      name: string;
+      memberLimit: number;
+      isPublic: boolean;
+      password?: string;
+      expiresInHours?: number;
+    },
+  ): Promise<RoomRow> {
+    const { db, env, clock } = this.deps;
+    this.purgeExpired();
+    if (getRoom(db, input.id)) {
+      throw new HttpError(409, "conflict", "Id da sala ja existe");
+    }
+    const cap = Math.min(input.memberLimit, env.MAX_ADMIN_MEMBERS_PER_ROOM);
+    const passwordHash = input.password ? await Bun.password.hash(input.password) : null;
+    const now = clock.now();
+    const expiresAt =
+      input.expiresInHours !== undefined ? now + input.expiresInHours * 60 * 60 * 1000 : null;
+    const row: RoomRow = {
+      id: input.id,
+      name: input.name,
+      password_hash: passwordHash,
+      is_public: input.isPublic ? 1 : 0,
+      member_limit: cap,
+      owner_id: PROVISIONED_OWNER_ID,
+      stream_key: composeStreamKey(input.id),
+      created_at: now,
+      creator_ip: "admin",
+      broadcast_enabled: 0,
+      broadcast_provider: "none",
+      broadcast_embed: null,
+      chat_flood_ban_sec: 60,
+      peak_members: 0,
+      expires_at: expiresAt,
+    };
+    insertRoom(db, row);
+    logger.info("room_created_admin", { roomId: input.id, expiresAt });
+    return row;
+  }
+
   async join(user: SessionUser, ip: string, roomId: string, password?: string): Promise<JoinResponse> {
     const { db, env, clock, livekit } = this.deps;
+    this.purgeExpired();
     const remaining = remainingLockMs(db, env, clock, roomId, ip, user.userId);
     if (remaining > 0) throw lockedOut(remaining);
 
-    const row = getRoom(db, roomId);
-    if (!row) {
-      throw new HttpError(404, "not_found", "Sala nao encontrada");
-    }
+    const row = this.ensureActiveRow(getRoom(db, roomId));
 
     if (isBanned(db, roomId, user.userId)) {
       throw new HttpError(403, "banned", "Voce foi banido desta sala");
     }
 
     const existing = getMembership(db, roomId, user.userId);
+    const provisioned = row.owner_id === PROVISIONED_OWNER_ID;
     const skipPassword = existing?.left_at === null || row.owner_id === user.userId;
     if (row.password_hash && !skipPassword) {
       if (!password) {
@@ -217,7 +275,15 @@ export class RoomService {
       throw new HttpError(409, "room_full", "A sala esta cheia");
     }
 
-    const role: Role = row.owner_id === user.userId ? "owner" : (existing?.role ?? "member");
+    const role: Role =
+      row.owner_id === user.userId
+        ? "owner"
+        : provisioned && !existing
+          ? "owner"
+          : (existing?.role ?? "member");
+    if (provisioned && !existing) {
+      updateRoomOwner(db, roomId, user.userId);
+    }
     upsertJoin(db, {
       roomId,
       userId: user.userId,
@@ -231,8 +297,9 @@ export class RoomService {
     const membership = getMembership(db, roomId, user.userId);
     const muted = membership?.muted === 1;
     const members = listMemberships(db, roomId).map(toMember);
-    const room = publicRoom(row, countPresent(db, roomId), members);
-    const ome = await this.omeInfo(row, role);
+    const activeRow = getRoom(db, roomId) ?? row;
+    const room = publicRoom(activeRow, countPresent(db, roomId), members);
+    const ome = await this.omeInfo(activeRow, role);
     const livekitToken = (await livekit.mintToken({
       roomId,
       userId: user.userId,
@@ -250,6 +317,7 @@ export class RoomService {
   }
 
   leave(user: SessionUser, roomId: string): void {
+    this.purgeExpired();
     const row = getRoom(this.deps.db, roomId);
     if (!row) throw new HttpError(404, "not_found", "Sala nao encontrada");
     markLeft(this.deps.db, roomId, user.userId, this.deps.clock.now());
@@ -360,8 +428,8 @@ export class RoomService {
   }
 
   async media(user: SessionUser | null, roomId: string): Promise<MediaStatus> {
-    const row = getRoom(this.deps.db, roomId);
-    if (!row) throw new HttpError(404, "not_found", "Sala nao encontrada");
+    this.purgeExpired();
+    const row = this.ensureActiveRow(getRoom(this.deps.db, roomId));
     const membership = user ? getMembership(this.deps.db, roomId, user.userId) : null;
     if (!membership && row.is_public !== 1) {
       throw new HttpError(404, "not_found", "Sala nao encontrada");

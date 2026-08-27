@@ -48,7 +48,11 @@ export const limits = {
   chatBurst: { count: 6, windowMs: 8000 },
   chatFloodBanSec: { min: 60, max: 120, default: 60 },
   memberLimit: { min: 2, max: 50 },
+  /** Operator-provisioned rooms may exceed the theater guest cap. */
+  adminMemberLimit: { min: 2, max: 500 },
   roomIdLength: 8,
+  roomId: { min: 6, max: 12 },
+  adminRoomExpiresHours: { min: 1, max: 8760 },
   chatHistory: 200,
   streamSecretLength: 10,
   broadcastEmbed: { min: 1, max: 512 },

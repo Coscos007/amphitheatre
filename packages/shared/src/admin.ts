@@ -87,12 +87,24 @@ export type AdminRoomRow = {
   uniqueEver: number;
   peak: number;
   createdAt: string;
+  /** null when the room has no scheduled expiry (operator indefinite). */
+  expiresAt: string | null;
   ownerId: string;
   streamKey: string;
   broadcast: RoomBroadcast;
   livekit?: AdminRoomLivekitSnapshot | null;
   ome?: AdminRoomOmeSnapshot | null;
   members?: AdminRoomMember[];
+};
+
+export type AdminCreateRoomBody = {
+  id: string;
+  name: string;
+  memberLimit: number;
+  isPublic: boolean;
+  password?: string;
+  /** Hours until SQLite removes the room. Omit for indefinite lifetime. */
+  expiresInHours?: number;
 };
 
 export type AdminSeriesPoint = {
