@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-## [1.3.0] - 2026-08-27
+## [1.3.1] - 2026-08-27
 
 ### Added
 
@@ -17,6 +17,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Changed
 
 - WebSocket presence includes a `connected` flag so offline members stay visible only during the offline grace window.
+
+### Fixed
+
+- Docker release build: export `AdminCreateRoomBody` from `@coliseum/shared`, type `memberLimit` state in the operator Rooms page, and declare `setLocalMuted` on the theater room store so `tsc` passes for admin and web SPAs.
 
 ## [1.2.0] - 2026-08-25
 
@@ -94,8 +98,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Multi-arch Docker release build: pin the JS-only `deps`/`build` stages in `Dockerfile` to `--platform=$BUILDPLATFORM` so `pnpm install`/`vite build` run natively on the runner instead of crashing under QEMU emulation ("illegal instruction") while cross-building `linux/arm64`.
 
-[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.3.0...HEAD
-[1.3.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.3.0
+[Unreleased]: https://github.com/simstm/amphitheatre/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/simstm/amphitheatre/releases/tag/v1.3.1
 [1.2.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.2.0
 [1.1.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.1.0
 [1.0.0]: https://github.com/simstm/amphitheatre/releases/tag/v1.0.0

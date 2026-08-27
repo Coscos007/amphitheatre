@@ -35,6 +35,7 @@ type RoomState = {
   }) => void;
   setLockout: (until: number | null) => void;
   setChatMutedUntil: (until: number | null) => void;
+  setLocalMuted: (userId: string, muted: boolean) => void;
   reset: () => void;
 };
 

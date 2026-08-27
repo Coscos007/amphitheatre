@@ -40,6 +40,7 @@ export {
 } from "./admin";
 export type {
   AdminApiKeyRotateResponse,
+  AdminCreateRoomBody,
   AdminFactoryResetResponse,
   AdminLabeledSeries,
   AdminLivekitNodeMetrics,

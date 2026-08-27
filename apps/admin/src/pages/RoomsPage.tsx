@@ -41,7 +41,7 @@ export function RoomsPage() {
   const [hideEmpty, setHideEmpty] = useState(false);
   const [roomId, setRoomId] = useState("");
   const [roomName, setRoomName] = useState("");
-  const [memberLimit, setMemberLimit] = useState(limits.memberLimit.max);
+  const [memberLimit, setMemberLimit] = useState<number>(limits.memberLimit.max);
   const [password, setPassword] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [expiryMode, setExpiryMode] = useState<ExpiryMode>("indefinite");
